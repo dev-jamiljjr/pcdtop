@@ -1,3 +1,45 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/*
+ * ===============================================
+ * Arquivo CSS Principal do PCD TOP
+ * ===============================================
+ * Este arquivo importa o Bootstrap e define as
+ * variáveis de cores e estilos globais do projeto.
+ * O Vite irá compilar este arquivo.
+ */
+
+/* Importação do Bootstrap (se estiver instalado via npm) */
+@import 'bootstrap/scss/bootstrap';
+
+/*
+ * -----------------------------------------------
+ * Variáveis de Cor Globais (Paleta PCD TOP)
+ * -----------------------------------------------
+ */
+:root {
+    --pcdtop-blue: #0047A1;
+    --pcdtop-dark-blue: #003366;
+    --pcdtop-yellow: #FFC107;
+    --pcdtop-green: #28A745;
+    --pcdtop-purple: #7B61FF;
+    --pcdtop-light-blue: #17A2B8;
+    --pcdtop-text: #687280;
+    --pcdtop-background: #F8FAFC;
+
+    /* Mapeamento para variáveis do Bootstrap (Opcional, mas recomendado) */
+    --bs-primary: var(--pcdtop-blue);
+    --bs-secondary: var(--pcdtop-text);
+    --bs-warning: var(--pcdtop-yellow);
+    --bs-success: var(--pcdtop-green);
+    --bs-body-bg: var(--pcdtop-background);
+    --bs-body-color: var(--pcdtop-text);
+}
+
+/*
+ * -----------------------------------------------
+ * Estilos Globais
+ * -----------------------------------------------
+ */
+body {
+    background-color: var(--bs-body-bg);
+}
+
