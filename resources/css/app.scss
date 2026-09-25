@@ -1,14 +1,14 @@
 /*
  * ===============================================
- * Arquivo CSS Principal do PCD TOP
+ * Arquivo SCSS Principal do PCD TOP
  * ===============================================
- * Este arquivo importa o Bootstrap e define as
- * variáveis de cores e estilos globais do projeto.
- * O Vite irá compilar este arquivo.
  */
 
-/* Importação do Bootstrap (se estiver instalado via npm) */
-@import 'bootstrap/scss/bootstrap';
+// REMOVA A LINHA DE IMPORTAÇÃO DOS BOOTSTRAP ICONS DAQUI.
+// Por exemplo: @import "~bootstrap-icons/bootstrap-icons.css"; // REMOVA ESTA LINHA
+
+/* Importação do Bootstrap usando alias (apenas os estilos core) */
+@import "~bootstrap/bootstrap";
 
 /*
  * -----------------------------------------------
@@ -42,4 +42,3 @@
 body {
     background-color: var(--bs-body-bg);
 }
-

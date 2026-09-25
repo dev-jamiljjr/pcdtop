@@ -1,3 +1,4 @@
+  GNU nano 8.7.1                            resources/views/layouts/guest.blade.php *
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
@@ -7,7 +8,8 @@
 
         <title>{{ config('app.name', 'PCD TOP') }}</title>
 
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
+        @vite(['resources/css/app.scss', 'resources/js/app.js']) // ALTERE AQUI
+
     </head>
     <body class="d-flex align-items-center justify-content-center vh-100">
         <div class="container">
@@ -24,7 +26,3 @@
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-    </body>
-</html>
