@@ -7,21 +7,18 @@
 
         <title>{{ config('app.name', 'PCD TOP') }}</title>
 
-        {{-- Diretiva do Vite para carregar os assets compilados --}}
         @vite(['resources/css/app.scss', 'resources/js/app.js'])
     </head>
     <body>
         <div class="d-flex">
-            {{-- Incluindo o componente da sidebar que criamos --}}
+            {{-- Sidebar vertical --}}
             <x-sidebar />
 
-            {{-- Div para o conteúdo principal, com margem à esquerda para não ficar embaixo da sidebar --}}
-            <div class="flex-grow-1" style="margin-left: 280px;">
-                {{-- O componente do header será inserido aqui na próxima etapa --}}
-                {{-- <x-header /> --}}
-
-                {{-- Conteúdo principal da página --}}
-                <main>
+            {{-- Área de conteúdo principal com margem à esquerda ajustada para ser igual à largura da sidebar --}}
+            <div class="flex-grow-1" style="margin-left: 102px;">
+                
+                {{-- Conteúdo da página com espaçamento interno (padding) --}}
+                <main class="p-4">
                     {{ $slot }}
                 </main>
             </div>

@@ -1,7 +1,5 @@
+// Importa o arquivo CSS principal do Bootstrap Icons
+import 'bootstrap-icons/font/bootstrap-icons.css';
 
-
-import Alpine from 'alpinejs';
-
-window.Alpine = Alpine;
-
-Alpine.start();
+// Importa o arquivo de configuração bootstrap.js (que carrega axios, bootstrap js, alpine)
+import './bootstrap';
