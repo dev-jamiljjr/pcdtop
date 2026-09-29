@@ -2,12 +2,17 @@
 
 namespace App\Models;
 
-// ... outras importações ...
+use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Laravel\Fortify\TwoFactorAuthenticatable; // Certifique-se que esta linha está correta
+use Laravel\Sanctum\HasApiTokens;           // Certifique-se que esta linha está correta
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, TwoFactorAuthenticatable;
+    use HasFactory, Notifiable, TwoFactorAuthenticatable, HasApiTokens; // Use todas as traits aqui
 
     /**
      * The attributes that are mass assignable.
@@ -21,7 +26,27 @@ class User extends Authenticatable
         'tipo_perfil',
     ];
 
-    // ... restante do código do seu arquivo ...
+    /**
+     * The attributes that should be hidden for serialization.
+     *
+     * @var array<int, string>
+     */
+    protected $hidden = [
+        'password',
+        'remember_token',
+        'two_factor_secret',        // Adicione esta linha se estiver usando Fortify
+        'two_factor_recovery_codes', // Adicione esta linha se estiver usando Fortify
+    ];
+
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array<string, string>
+     */
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
+    ];
 
     /**
      * Um usuário pode ter um perfil de jovem associado.
