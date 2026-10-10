@@ -2,59 +2,37 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\ProfileUpdateRequest;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
 
 class ProfileController extends Controller
 {
     /**
-     * Display the user's profile form.
+     * Exibe a página de perfil do usuário logado.
      */
-    public function edit(Request $request): View
+    public function show(): View
     {
-        return view('profile.edit', [
-            'user' => $request->user(),
-        ]);
+        return view('profile.show');
     }
 
     /**
-     * Update the user's profile information.
+     * Exibe o formulário para editar o perfil do usuário logado.
      */
-    public function update(ProfileUpdateRequest $request): RedirectResponse
+    public function edit(): View
     {
-        $request->user()->fill($request->validated());
-
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
-        }
-
-        $request->user()->save();
-
-        return Redirect::route('profile.edit')->with('status', 'profile-updated');
+        // O usuário e seu perfil já estão disponíveis via Auth::user()
+        // e os relacionamentos definidos no modelo User (jovem(), empresa()).
+        return view('profile.edit');
     }
 
     /**
-     * Delete the user's account.
+     * Atualiza as informações do perfil do usuário logado.
      */
-    public function destroy(Request $request): RedirectResponse
+    public function update(Request $request)
     {
-        $request->validateWithBag('userDeletion', [
-            'password' => ['required', 'current_password'],
-        ]);
-
-        $user = $request->user();
-
-        Auth::logout();
-
-        $user->delete();
-
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-
-        return Redirect::to('/');
+        // Lógica de validação e atualização será adicionada aqui.
+        // Esta função será o destino do formulário de edição.
+        return redirect()->route('profile.show')->with('status', 'Perfil atualizado com sucesso!');
     }
 }

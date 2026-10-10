@@ -52,7 +52,8 @@
         </a>
         <ul class="dropdown-menu dropdown-menu-dark text-small shadow">
             <li><h6 class="dropdown-header">Jamil J. Jr.</h6></li>
-            <li><a class="dropdown-item" href="#"><i class="bi bi-person-circle me-2"></i>Meu Perfil</a></li>
+            {{-- ALTERAÇÃO APLICADA AQUI --}}
+            <li><a class="dropdown-item" href="{{ route('profile.show') }}"><i class="bi bi-person-circle me-2"></i>Meu Perfil</a></li>
             <li><a class="dropdown-item" href="#"><i class="bi bi-gear-fill me-2"></i>Configurações</a></li>
             <li><hr class="dropdown-divider"></li>
             <li><a class="dropdown-item" href="#"><i class="bi bi-box-arrow-right me-2"></i>Sair</a></li>
