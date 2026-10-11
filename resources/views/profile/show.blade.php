@@ -1,8 +1,18 @@
 <x-app-layout>
     <div class="container py-4">
+    
+        {{-- Exibe a mensagem de status (sucesso) --}}
+        @if (session('status'))
+            <div class="mb-4 font-medium text-sm text-green-600 bg-green-100 border border-green-400 rounded-md p-3">
+                {{ session('status') }}
+            </div>
+        @endif
+
         <h1 class="text-2xl font-bold mb-4">Meu Perfil</h1>
 
         <p>Bem-vindo(a), {{ Auth::user()->name }}!</p>
+        {{-- LINHA TEMPORÁRIA ADICIONADA AQUI --}}
+        
         <p>Seu e-mail: {{ Auth::user()->email }}</p>
         <p>Seu tipo de perfil: <strong>{{ Auth::user()->tipo_perfil }}</strong>.</p>
         <hr class="my-4">

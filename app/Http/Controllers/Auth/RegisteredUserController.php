@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Jovem;
 use App\Models\Empresa;
-use App\Providers\RouteServiceProvider;
+// A importação de RouteServiceProvider foi REMOVIDA
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -45,7 +45,6 @@ class RegisteredUserController extends Controller
                 'user_id' => $user->id,
                 'razao_social' => $request->name,
                 'nome_fantasia' => $request->name,
-                // CORREÇÃO: Gera um CNPJ único para cada novo cadastro de empresa
                 'cnpj' => '00.000.000/0000-' . uniqid(),
                 'email_contato' => $request->email,
             ]);
@@ -54,6 +53,7 @@ class RegisteredUserController extends Controller
         event(new Registered($user));
         Auth::login($user);
 
-        return redirect(RouteServiceProvider::HOME);
+        // CÓDIGO ALTERADO PARA REDIRECIONAMENTO DIRETO
+        return redirect('/');
     }
 }
