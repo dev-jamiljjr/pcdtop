@@ -53,7 +53,7 @@ class RegisteredUserController extends Controller
         event(new Registered($user));
         Auth::login($user);
 
-        // CÓDIGO ALTERADO PARA REDIRECIONAMENTO DIRETO
+        // CORREÇÃO DEFINITIVA: Redireciona diretamente para a rota inicial
         return redirect('/');
     }
 }

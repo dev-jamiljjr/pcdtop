@@ -51,12 +51,16 @@
             <img src="{{ asset('images/avatar-placeholder.png') }}" alt="Avatar do usuário" width="32" height="32" class="rounded-circle">
         </a>
         <ul class="dropdown-menu dropdown-menu-dark text-small shadow">
-            <li><h6 class="dropdown-header">Jamil J. Jr.</h6></li>
-            {{-- ALTERAÇÃO APLICADA AQUI --}}
+            <li><h6 class="dropdown-header">{{ Auth::user()->name ?? 'Usuário' }}</h6></li>
             <li><a class="dropdown-item" href="{{ route('profile.show') }}"><i class="bi bi-person-circle me-2"></i>Meu Perfil</a></li>
             <li><a class="dropdown-item" href="#"><i class="bi bi-gear-fill me-2"></i>Configurações</a></li>
             <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item" href="#"><i class="bi bi-box-arrow-right me-2"></i>Sair</a></li>
+            {{-- Funcionalidade de Logout usando link direto --}}
+            <li>
+                <a class="dropdown-item" href="{{ route('logout.temp') }}">
+                    <i class="bi bi-box-arrow-right me-2"></i>Sair
+                </a>
+            </li>
         </ul>
     </div>
 </aside>
