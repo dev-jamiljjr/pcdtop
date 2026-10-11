@@ -1,9 +1,10 @@
 <?php
 
-use Illuminate\Http\Request; // Adicionado para a rota de logout
-use Illuminate\Support\Facades\Auth; // Adicionado para a rota de logout
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\VagaController; // Importado aqui, no topo
 
 /*
 |--------------------------------------------------------------------------
@@ -16,7 +17,7 @@ Route::get('/', function () {
     return view('home');
 })->name('home');
 
-// Rotas para as páginas principais
+// Rotas para as páginas principais (sem autenticação explícita)
 Route::get('/jovem', function () { return view('jovem.index'); })->name('jovem.index');
 Route::get('/empresa', function () { return view('empresa.index'); })->name('empresa.index');
 Route::get('/pse', function () { return view('pse.index'); })->name('pse.index');
@@ -28,13 +29,20 @@ Route::middleware('auth')->group(function () {
     Route::get('/perfil/editar', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/perfil', [ProfileController::class, 'update'])->name('profile.update');
 
-    // ROTA DE LOGOUT TEMPORÁRIA (GET) - AGORA COM LÓGICA DIRETA
+    // ROTA DE LOGOUT (GET)
     Route::get('/logout-temp', function (Request $request) {
         Auth::guard('web')->logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
         return redirect('/');
     })->name('logout.temp');
+
+    // Rotas para Gerenciamento de Vagas (Empresa)
+    Route::resource('vagas', VagaController::class)->except(['show']); // show será separado para o jovem
+    // Rota para Consulta de Vagas (Jovem)
+    Route::get('/vagas/buscar', [VagaController::class, 'search'])->name('vagas.search');
+    // Rota para Visualização de Detalhes da Vaga (Jovem e Empresa)
+    Route::get('/vagas/{vaga}', [VagaController::class, 'show'])->name('vagas.show');
 });
 
 // Mantenha as outras rotas de autenticação no final

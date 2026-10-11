@@ -16,6 +16,8 @@
                 <span style="font-size: 0.75rem; {{ request()->routeIs('home') ? 'font-weight: bold;' : '' }}">Início</span>
             </a>
         </li>
+
+        {{-- Links de navegação legados (Jovem, Empresa, PSE) - Mantidos por enquanto --}}
         {{-- Link Jovem --}}
         <li class="nav-item">
             <a href="{{ route('jovem.index') }}"
@@ -43,6 +45,32 @@
                 <span style="font-size: 0.75rem; {{ request()->routeIs('pse.index') ? 'font-weight: bold;' : '' }}">PSE</span>
             </a>
         </li>
+
+        {{-- NOVOS LINKS PARA VAGAS (Condicionais) --}}
+        {{-- Link Vagas para Empresas (visível apenas para Empresas) --}}
+        @if (Auth::check() && Auth::user()->tipo_perfil === 'empresa')
+            <li class="nav-item">
+                <a href="{{ route('vagas.index') }}"
+                   class="nav-link d-flex flex-column align-items-center py-3 {{ request()->routeIs('vagas.index', 'vagas.create', 'vagas.edit') ? 'active' : 'text-white' }}"
+                   style="{{ request()->routeIs('vagas.index', 'vagas.create', 'vagas.edit') ? 'background-color: var(--pcdtop-yellow); color: var(--pcdtop-dark-blue);' : '' }} border-radius: 0.375rem;">
+                    <i class="bi bi-card-list fs-4 mb-1"></i>
+                    <span style="font-size: 0.75rem; {{ request()->routeIs('vagas.index', 'vagas.create', 'vagas.edit') ? 'font-weight: bold;' : '' }}">Minhas Vagas</span>
+                </a>
+            </li>
+        @endif
+
+        {{-- Link Buscar Vagas para Jovens (visível apenas para Jovens) --}}
+        @if (Auth::check() && Auth::user()->tipo_perfil === 'jovem')
+            <li class="nav-item">
+                <a href="{{ route('vagas.search') }}"
+                   class="nav-link d-flex flex-column align-items-center py-3 {{ request()->routeIs('vagas.search', 'vagas.show') ? 'active' : 'text-white' }}"
+                   style="{{ request()->routeIs('vagas.search', 'vagas.show') ? 'background-color: var(--pcdtop-yellow); color: var(--pcdtop-dark-blue);' : '' }} border-radius: 0.375rem;">
+                    <i class="bi bi-search fs-4 mb-1"></i>
+                    <span style="font-size: 0.75rem; {{ request()->routeIs('vagas.search', 'vagas.show') ? 'font-weight: bold;' : '' }}">Buscar Vagas</span>
+                </a>
+            </li>
+        @endif
+
     </ul>
     <hr>
     {{-- Menu do Usuário Compactado --}}

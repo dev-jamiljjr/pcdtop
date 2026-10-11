@@ -11,7 +11,15 @@ class Vaga extends Model
     use HasFactory;
 
     protected $fillable = [
-        'empresa_id', 'titulo', 'descricao', 'requisitos', 'salario', 'cidade', 'estado', 'status',
+        'empresa_id',
+        'titulo',
+        'descricao',
+        'requisitos',
+        'localizacao', // Adicionado
+        'tipo_contrato', // Adicionado
+        'salario',
+        'beneficios', // Adicionado
+        'status',
     ];
 
     public function empresa(): BelongsTo
