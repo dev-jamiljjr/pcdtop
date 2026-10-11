@@ -3,7 +3,7 @@
         <h1 class="text-2xl font-bold mb-4">Editar Perfil</h1>
         <hr class="my-4">
 
-        <form method="POST" action="{{ route('profile.update') }}">
+        <form method="POST" action="{{ route('profile.update') }}" enctype="multipart/form-data">
             @csrf
             @method('PUT')
 
@@ -58,6 +58,18 @@
                     <div class="md:col-span-2 mb-3">
                         <x-input-label for="experiencia_profissional" value="Resumo da Experiência Profissional" />
                         <textarea id="experiencia_profissional" name="experiencia_profissional" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" rows="4">{{ old('experiencia_profissional', $user->jovem->experiencia_profissional) }}</textarea>
+                    </div>
+
+                    {{-- Campo para Upload de Currículo PDF --}}
+                    <div class="md:col-span-2 mb-3">
+                        <x-input-label for="curriculo" value="Upload de Currículo (PDF)" />
+                        <input id="curriculo" type="file" name="curriculo" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" accept="application/pdf" />
+                        <x-input-error class="mt-2" :messages="$errors->get('curriculo')" />
+                        @if ($user->jovem->curriculo_path)
+                            <p class="text-sm text-gray-600 mt-2">
+                                Currículo atual: <a href="{{ Storage::url($user->jovem->curriculo_path) }}" target="_blank" class="text-blue-500 hover:underline">Visualizar</a>
+                            </p>
+                        @endif
                     </div>
                 </div>
 

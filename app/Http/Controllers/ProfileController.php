@@ -6,7 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
-use App\Models\User; // Importa o modelo User
+use App\Models\User;
+use Illuminate\Support\Facades\Storage; // Adicionado para manipulação de arquivos
 
 class ProfileController extends Controller
 {
@@ -19,21 +20,20 @@ class ProfileController extends Controller
     {
         $user = Auth::user();
 
-        // Carrega o relacionamento 'jovem' ou 'empresa' condicionalmente
         if ($user->tipo_perfil === 'jovem') {
             $user->load('jovem');
         } elseif ($user->tipo_perfil === 'empresa') {
             $user->load('empresa');
         }
 
-        return view('profile.edit', compact('user')); // Passa o usuário (com perfil carregado) para a view
+        return view('profile.edit', compact('user'));
     }
 
     public function update(Request $request)
     {
         $user = Auth::user();
 
-        // 1. Validar dados comuns
+        // 1. Validar dados comuns do usuário
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
@@ -44,7 +44,7 @@ class ProfileController extends Controller
 
         // 3. Validar e atualizar dados específicos do perfil
         if ($user->tipo_perfil === 'jovem' && $user->jovem) {
-            $jovemData = $request->validate([
+            $jovemValidationRules = [
                 'data_nascimento' => ['nullable', 'date'],
                 'telefone' => ['nullable', 'string', 'max:20'],
                 'cidade' => ['nullable', 'string', 'max:255'],
@@ -53,7 +53,19 @@ class ProfileController extends Controller
                 'deficiencia' => ['nullable', 'string', 'max:255'],
                 'area_interesse' => ['nullable', 'string', 'max:255'],
                 'experiencia_profissional' => ['nullable', 'string'],
-            ]);
+                'curriculo' => ['nullable', 'file', 'mimes:pdf', 'max:2048'], // Regras para o PDF (2MB)
+            ];
+            $jovemData = $request->validate($jovemValidationRules);
+
+            // Lógica de upload do currículo
+            if ($request->hasFile('curriculo')) {
+                // Apaga o currículo antigo, se existir
+                if ($user->jovem->curriculo_path && Storage::disk('public')->exists($user->jovem->curriculo_path)) {
+                    Storage::disk('public')->delete($user->jovem->curriculo_path);
+                }
+                // Armazena o novo currículo e salva o caminho
+                $jovemData['curriculo_path'] = $request->file('curriculo')->store('curriculos', 'public');
+            }
             $user->jovem->update($jovemData);
 
         } elseif ($user->tipo_perfil === 'empresa' && $user->empresa) {
@@ -64,7 +76,6 @@ class ProfileController extends Controller
                 'telefone_empresa' => ['nullable', 'string', 'max:20'],
                 'email_contato' => ['required', 'string', 'email', 'max:255'],
             ]);
-            // Renomeia 'telefone_empresa' para 'telefone' para corresponder ao modelo
             $empresaData['telefone'] = $empresaData['telefone_empresa'];
             unset($empresaData['telefone_empresa']);
 

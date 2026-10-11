@@ -27,6 +27,15 @@
                 <p><strong>Deficiência:</strong> {{ Auth::user()->jovem->deficiencia ?? 'Não informado' }}</p>
                 <p><strong>Área de Interesse:</strong> {{ Auth::user()->jovem->area_interesse ?? 'Não informado' }}</p>
                 <p><strong>Experiência Profissional:</strong> {{ Auth::user()->jovem->experiencia_profissional ?? 'Não informado' }}</p>
+
+                {{-- Exibe o link para o Currículo PDF --}}
+                <p><strong>Currículo PDF:</strong>
+                    @if (Auth::user()->jovem->curriculo_path)
+                        <a href="{{ Storage::url(Auth::user()->jovem->curriculo_path) }}" target="_blank" class="text-blue-500 hover:underline">Visualizar Currículo</a>
+                    @else
+                        Não enviado
+                    @endif
+                </p>
             </div>
         @elseif (Auth::user()->tipo_perfil === 'empresa' && Auth::user()->empresa)
             <h2 class="text-xl font-semibold mb-3">Detalhes do Perfil Empresa</h2>
