@@ -3,8 +3,7 @@
         <h1 class="text-2xl font-bold mb-4">Editar Vaga</h1>
         <hr class="my-4">
 
-        {{-- Inclui o mesmo formulário de create.blade.php, passando a variável vaga --}}
-        @include('vagas.create', ['vaga' => $vaga])
-
+        {{-- Inclui o formulário real, passando a vaga existente para edição --}}
+        @include('vagas._form', ['vaga' => $vaga])
     </div>
 </x-app-layout>
