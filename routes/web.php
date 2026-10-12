@@ -4,7 +4,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\VagaController; // Importado aqui, no topo
+use App\Http\Controllers\VagaController;
+use App\Http\Controllers\PseController;
+use App\Http\Middleware\CheckPseProfile; // IMPORTAÇÃO DA CLASSE DO MIDDLEWARE
 
 /*
 |--------------------------------------------------------------------------
@@ -38,11 +40,19 @@ Route::middleware('auth')->group(function () {
     })->name('logout.temp');
 
     // Rotas para Gerenciamento de Vagas (Empresa)
-    Route::resource('vagas', VagaController::class)->except(['show']); // show será separado para o jovem
+    Route::resource('vagas', VagaController::class)->except(['show']);
     // Rota para Consulta de Vagas (Jovem)
     Route::get('/vagas/buscar', [VagaController::class, 'search'])->name('vagas.search');
     // Rota para Visualização de Detalhes da Vaga (Jovem e Empresa)
     Route::get('/vagas/{vaga}', [VagaController::class, 'show'])->name('vagas.show');
+
+    // Rotas para a Área Administrativa do PSE
+    Route::prefix('admin/pse')->name('pse.')->middleware(CheckPseProfile::class)->group(function () { // A CORREÇÃO ESTÁ AQUI
+        Route::get('/', [PseController::class, 'dashboard'])->name('dashboard');
+        Route::get('/jovens', [PseController::class, 'listJovens'])->name('jovens.index');
+        Route::get('/empresas', [PseController::class, 'listEmpresas'])->name('empresas.index');
+        Route::get('/vagas', [PseController::class, 'listVagas'])->name('vagas.index');
+    });
 });
 
 // Mantenha as outras rotas de autenticação no final

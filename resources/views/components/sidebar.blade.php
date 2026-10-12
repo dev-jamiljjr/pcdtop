@@ -36,7 +36,7 @@
                 <span style="font-size: 0.75rem; {{ request()->routeIs('empresa.index') ? 'font-weight: bold;' : '' }}">Empresa</span>
             </a>
         </li>
-        {{-- Link PSE --}}
+        {{-- Link PSE (Genérico - será substituído pelo painel específico) --}}
         <li class="nav-item">
             <a href="{{ route('pse.index') }}"
                class="nav-link d-flex flex-column align-items-center py-3 {{ request()->routeIs('pse.index') ? 'active' : 'text-white' }}"
@@ -46,8 +46,7 @@
             </a>
         </li>
 
-        {{-- NOVOS LINKS PARA VAGAS (Condicionais) --}}
-        {{-- Link Vagas para Empresas (visível apenas para Empresas) --}}
+        {{-- Links para VAGAS (Condicionais por Perfil) --}}
         @if (Auth::check() && Auth::user()->tipo_perfil === 'empresa')
             <li class="nav-item">
                 <a href="{{ route('vagas.index') }}"
@@ -59,7 +58,6 @@
             </li>
         @endif
 
-        {{-- Link Buscar Vagas para Jovens (visível apenas para Jovens) --}}
         @if (Auth::check() && Auth::user()->tipo_perfil === 'jovem')
             <li class="nav-item">
                 <a href="{{ route('vagas.search') }}"
@@ -67,6 +65,18 @@
                    style="{{ request()->routeIs('vagas.search', 'vagas.show') ? 'background-color: var(--pcdtop-yellow); color: var(--pcdtop-dark-blue);' : '' }} border-radius: 0.375rem;">
                     <i class="bi bi-search fs-4 mb-1"></i>
                     <span style="font-size: 0.75rem; {{ request()->routeIs('vagas.search', 'vagas.show') ? 'font-weight: bold;' : '' }}">Buscar Vagas</span>
+                </a>
+            </li>
+        @endif
+
+        {{-- NOVO LINK PARA PAINEL PSE (Condicional) --}}
+        @if (Auth::check() && Auth::user()->tipo_perfil === 'pse')
+            <li class="nav-item">
+                <a href="{{ route('pse.dashboard') }}"
+                   class="nav-link d-flex flex-column align-items-center py-3 {{ request()->routeIs('pse.dashboard', 'pse.jovens.index', 'pse.empresas.index', 'pse.vagas.index') ? 'active' : 'text-white' }}"
+                   style="{{ request()->routeIs('pse.dashboard', 'pse.jovens.index', 'pse.empresas.index', 'pse.vagas.index') ? 'background-color: var(--pcdtop-yellow); color: var(--pcdtop-dark-blue);' : '' }} border-radius: 0.375rem;">
+                    <i class="bi bi-person-workspace fs-4 mb-1"></i>
+                    <span style="font-size: 0.75rem; {{ request()->routeIs('pse.dashboard', 'pse.jovens.index', 'pse.empresas.index', 'pse.vagas.index') ? 'font-weight: bold;' : '' }}">Painel PSE</span>
                 </a>
             </li>
         @endif
