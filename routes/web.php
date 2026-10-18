@@ -46,10 +46,15 @@ Route::middleware('auth')->group(function () {
 
     // Rotas para Gerenciamento de Vagas (Empresa)
     Route::resource('vagas', VagaController::class)->except(['show']);
+    
     // Rota para Consulta de Vagas (Jovem)
     Route::get('/vagas/buscar', [VagaController::class, 'search'])->name('vagas.search');
+    
     // Rota para Visualização de Detalhes da Vaga (Jovem e Empresa)
     Route::get('/vagas/{vaga}', [VagaController::class, 'show'])->name('vagas.show');
+
+    // Rota para Candidatura do Jovem a uma Vaga (NOVA ROTA)
+    Route::post('/vagas/{vaga}/candidatar', [VagaController::class, 'apply'])->name('vagas.apply');
 
     // Rotas para a Área Administrativa do PSE
     Route::prefix('admin/pse')->name('pse.')->middleware(CheckPseProfile::class)->group(function () {

@@ -1,5 +1,22 @@
 <x-app-layout>
     <div class="container py-4">
+        {{-- Mensagens de Feedback --}}
+        @if (session('status'))
+            <div class="alert alert-success mb-4" role="alert">
+                {{ session('status') }}
+            </div>
+        @endif
+        @if (session('error'))
+            <div class="alert alert-danger mb-4" role="alert">
+                {{ session('error') }}
+            </div>
+        @endif
+        @if (session('warning'))
+            <div class="alert alert-warning mb-4" role="alert">
+                {{ session('warning') }}
+            </div>
+        @endif
+
         <a href="{{ Auth::user()->tipo_perfil === 'jovem' ? route('vagas.search') : route('vagas.index') }}" class="btn btn-secondary mb-3">
             <i class="bi bi-arrow-left me-2"></i>Voltar
         </a>
@@ -37,7 +54,18 @@
                     </ul>
                     <div class="card-body">
                         @if (Auth::user()->tipo_perfil === 'jovem')
-                            <button class="btn btn-success w-100"><i class="bi bi-check-circle me-2"></i>Candidatar-se</button> {{-- Funcionalidade futura --}}
+                            @if ($candidatado)
+                                <button type="button" class="btn btn-secondary w-100" disabled>
+                                    <i class="bi bi-check-circle me-2"></i>Já Candidatado
+                                </button>
+                            @else
+                                <form action="{{ route('vagas.apply', $vaga->id) }}" method="POST">
+                                    @csrf
+                                    <button type="submit" class="btn btn-success w-100">
+                                        <i class="bi bi-check-circle me-2"></i>Candidatar-se
+                                    </button>
+                                </form>
+                            @endif
                         @endif
                     </div>
                 </div>

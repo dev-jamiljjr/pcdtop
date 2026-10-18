@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Vaga;
+use App\Models\Candidatura; // Importação da classe Candidatura
+use App\Models\Jovem;       // Importação da classe Jovem
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
@@ -11,26 +13,16 @@ use Illuminate\Validation\Rule;
 
 class VagaController extends Controller
 {
-    /**
-     * Exibe uma listagem das vagas da empresa logada.
-     */
     public function index(): View
     {
-        // Garante que apenas empresas possam acessar esta funcionalidade
         if (Auth::user()->tipo_perfil !== 'empresa') {
             abort(403, 'Acesso não autorizado. Apenas empresas podem gerenciar vagas.');
         }
-
         $empresa = Auth::user()->empresa;
-        // ALTERAÇÃO: Ordena as vagas pelo título em ordem alfabética (ascendente)
         $vagas = $empresa->vagas()->orderBy('titulo', 'asc')->paginate(10);
-
         return view('vagas.index', compact('vagas'));
     }
 
-    /**
-     * Exibe o formulário para criar uma nova vaga.
-     */
     public function create(): View
     {
         if (Auth::user()->tipo_perfil !== 'empresa') {
@@ -39,15 +31,11 @@ class VagaController extends Controller
         return view('vagas.create');
     }
 
-    /**
-     * Armazena uma vaga recém-criada no banco de dados.
-     */
     public function store(Request $request): RedirectResponse
     {
         if (Auth::user()->tipo_perfil !== 'empresa') {
             abort(403, 'Acesso não autorizado. Apenas empresas podem criar vagas.');
         }
-
         $validated = $request->validate([
             'titulo' => ['required', 'string', 'max:255'],
             'descricao' => ['required', 'string'],
@@ -57,46 +45,42 @@ class VagaController extends Controller
             'salario' => ['nullable', 'numeric', 'min:0'],
             'beneficios' => ['nullable', 'string'],
         ]);
-
         Auth::user()->empresa->vagas()->create($validated);
-
         return redirect()->route('vagas.index')->with('status', 'Vaga criada com sucesso!');
     }
 
-    /**
-     * Exibe os detalhes de uma vaga específica.
-     */
     public function show(Vaga $vaga): View
     {
-        // Autoriza que jovens vejam qualquer vaga, e empresas vejam suas próprias vagas
         if (Auth::user()->tipo_perfil === 'empresa' && Auth::user()->id !== $vaga->empresa->user_id) {
             abort(403, 'Acesso não autorizado. Você não tem permissão para visualizar esta vaga.');
         }
-        return view('vagas.show', compact('vaga'));
+
+        $candidatado = false;
+        if (Auth::check() && Auth::user()->tipo_perfil === 'jovem') {
+            $jovem = Auth::user()->jovem;
+            if ($jovem) {
+                $candidatado = Candidatura::where('jovem_id', $jovem->id)
+                                          ->where('vaga_id', $vaga->id)
+                                          ->exists();
+            }
+        }
+
+        return view('vagas.show', compact('vaga', 'candidatado'));
     }
 
-    /**
-     * Exibe o formulário para editar uma vaga específica.
-     */
     public function edit(Vaga $vaga): View
     {
-        // Autoriza que apenas a empresa dona da vaga possa editá-la
         if (Auth::user()->id !== $vaga->empresa->user_id) {
             abort(403, 'Acesso não autorizado. Você não tem permissão para editar esta vaga.');
         }
         return view('vagas.edit', compact('vaga'));
     }
 
-    /**
-     * Atualiza uma vaga específica no banco de dados.
-     */
     public function update(Request $request, Vaga $vaga): RedirectResponse
     {
-        // Autoriza que apenas a empresa dona da vaga possa atualizá-la
         if (Auth::user()->id !== $vaga->empresa->user_id) {
             abort(403, 'Acesso não autorizado. Você não tem permissão para atualizar esta vaga.');
         }
-
         $validated = $request->validate([
             'titulo' => ['required', 'string', 'max:255'],
             'descricao' => ['required', 'string'],
@@ -106,41 +90,52 @@ class VagaController extends Controller
             'salario' => ['nullable', 'numeric', 'min:0'],
             'beneficios' => ['nullable', 'string'],
         ]);
-
         $vaga->update($validated);
-
         return redirect()->route('vagas.index')->with('status', 'Vaga atualizada com sucesso!');
     }
 
-    /**
-     * Remove uma vaga específica do banco de dados.
-     */
     public function destroy(Vaga $vaga): RedirectResponse
     {
-        // Autoriza que apenas a empresa dona da vaga possa excluí-la
         if (Auth::user()->id !== $vaga->empresa->user_id) {
             abort(403, 'Acesso não autorizado. Você não tem permissão para excluir esta vaga.');
         }
-
         $vaga->delete();
-
         return redirect()->route('vagas.index')->with('status', 'Vaga excluída com sucesso!');
     }
 
-    // --- Métodos para Jovem ---
-
-    /**
-     * Exibe uma listagem de todas as vagas disponíveis para jovens.
-     */
     public function search(Request $request): View
     {
-        // Garante que apenas jovens possam acessar esta funcionalidade
         if (Auth::user()->tipo_perfil !== 'jovem') {
             abort(403, 'Acesso não autorizado. Apenas jovens podem consultar vagas.');
         }
-
-        // ALTERAÇÃO: Busca todas as vagas ativas, ordenadas pelo título em ordem alfabética (ascendente)
         $vagas = Vaga::where('status', 'ativa')->orderBy('titulo', 'asc')->paginate(10);
         return view('vagas.search', compact('vagas'));
+    }
+
+    public function apply(Request $request, Vaga $vaga): RedirectResponse
+    {
+        if (!Auth::check() || Auth::user()->tipo_perfil !== 'jovem') {
+            abort(403, 'Acesso não autorizado. Apenas jovens podem se candidatar a vagas.');
+        }
+
+        $jovem = Auth::user()->jovem;
+        if (!$jovem) {
+            return redirect()->back()->with('error', 'Seu perfil de jovem não está completo. Por favor, preencha seu currículo antes de se candidatar.');
+        }
+
+        $existingCandidatura = Candidatura::where('jovem_id', $jovem->id)
+                                        ->where('vaga_id', $vaga->id)
+                                        ->first();
+        if ($existingCandidatura) {
+            return redirect()->back()->with('warning', 'Você já se candidatou a esta vaga.');
+        }
+
+        Candidatura::create([
+            'jovem_id' => $jovem->id,
+            'vaga_id' => $vaga->id,
+            'status' => 'pendente',
+        ]);
+
+        return redirect()->back()->with('status', 'Candidatura realizada com sucesso!');
     }
 }
