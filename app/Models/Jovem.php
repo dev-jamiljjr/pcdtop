@@ -36,7 +36,7 @@ class Jovem extends Model
         'habilidades',
         'link_portfolio',
         'link_linkedin',
-        'curriculo_path', // Certifique-se que este campo está aqui para o upload de PDF
+        'curriculo_path', // Campo para o caminho do PDF
     ];
 
     /**
