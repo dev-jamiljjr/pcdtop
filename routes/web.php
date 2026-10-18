@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\VagaController;
 use App\Http\Controllers\PseController;
-use App\Http\Middleware\CheckPseProfile; // IMPORTAÇÃO DA CLASSE DO MIDDLEWARE
+use App\Http\Middleware\CheckPseProfile;
 
 /*
 |--------------------------------------------------------------------------
@@ -23,6 +23,11 @@ Route::get('/', function () {
 Route::get('/jovem', function () { return view('jovem.index'); })->name('jovem.index');
 Route::get('/empresa', function () { return view('empresa.index'); })->name('empresa.index');
 Route::get('/pse', function () { return view('pse.index'); })->name('pse.index');
+
+// Rotas para a funcionalidade "Acesso Admin" (públicas)
+Route::get('/acesso-admin', [PseController::class, 'showAdminActivationForm'])->name('pse.show-admin-activation-form');
+Route::post('/acesso-admin', [PseController::class, 'activateAdmin'])->name('pse.activate-admin');
+
 
 // Grupo de rotas que exigem autenticação
 Route::middleware('auth')->group(function () {
@@ -47,7 +52,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/vagas/{vaga}', [VagaController::class, 'show'])->name('vagas.show');
 
     // Rotas para a Área Administrativa do PSE
-    Route::prefix('admin/pse')->name('pse.')->middleware(CheckPseProfile::class)->group(function () { // A CORREÇÃO ESTÁ AQUI
+    Route::prefix('admin/pse')->name('pse.')->middleware(CheckPseProfile::class)->group(function () {
         Route::get('/', [PseController::class, 'dashboard'])->name('dashboard');
         Route::get('/jovens', [PseController::class, 'listJovens'])->name('jovens.index');
         Route::get('/empresas', [PseController::class, 'listEmpresas'])->name('empresas.index');

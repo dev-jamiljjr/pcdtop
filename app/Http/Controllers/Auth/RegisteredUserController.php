@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\View\View;
+use Closure; // Importar a classe Closure para validação customizada
 
 class RegisteredUserController extends Controller
 {
@@ -26,7 +27,20 @@ class RegisteredUserController extends Controller
     {
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
+            'email' => [
+                'required',
+                'string',
+                'lowercase',
+                'email',
+                'max:255',
+                'unique:'.User::class,
+                // Adicionando a regra de validação customizada para o e-mail reservado
+                function (string $attribute, mixed $value, Closure $fail) {
+                    if ($value === 'sereficiente@30dejulho.com.br') {
+                        $fail('Registro Inválido! Este usuário está reservado!');
+                    }
+                },
+            ],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'tipo_perfil' => ['required', 'string', 'in:jovem,empresa'],
         ]);

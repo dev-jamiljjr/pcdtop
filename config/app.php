@@ -45,4 +45,14 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Chave de Ativação do Administrador PSE
+    |--------------------------------------------------------------------------
+    |
+    | Carrega o hash da chave de ativação do .env para ser usado na aplicação.
+    |
+    */
+    'pse_activation_key_hash' => env('PSE_ACTIVATION_KEY_HASH'),
+
 ];
