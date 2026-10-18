@@ -12,11 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('vagas', function (Blueprint $table) {
-            // Remove as colunas cidade e estado, pois localizacao é mais abrangente
-            $table->dropColumn(['cidade', 'estado']);
-            $table->string('localizacao')->after('requisitos');
-            $table->string('tipo_contrato')->after('localizacao'); // CLT, PJ, Estágio, etc.
-            $table->text('beneficios')->nullable()->after('salario');
+            // Adicionar a coluna 'status' para gerenciar o estado da vaga (e.g., 'ativa', 'inativa', 'preenchida')
+            // Como esta coluna já está sendo criada na migração original, podemos deixar este método 'up' vazio
+            // ou, para garantir, adicionar a coluna apenas se ela não existir.
+            // A abordagem mais limpa é consolidar na migração de criação e deixar este vazio.
         });
     }
 
@@ -25,11 +24,12 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('vagas', function (Blueprint $table) {
-            $table->dropColumn(['localizacao', 'tipo_contrato', 'beneficios']);
-            // Adiciona cidade e estado de volta, se necessário
-            $table->string('cidade')->nullable();
-            $table->string('estado')->nullable();
-        });
+        // O método down correspondente também pode ser deixado vazio
+        // ou podemos remover a coluna 'status' se ela existir.
+        if (Schema::hasColumn('vagas', 'status')) {
+            Schema::table('vagas', function (Blueprint $table) {
+                $table->dropColumn('status');
+            });
+        }
     }
 };

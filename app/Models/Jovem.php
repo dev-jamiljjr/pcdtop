@@ -15,7 +15,7 @@ class Jovem extends Model
      *
      * @var string
      */
-    protected $table = 'jovens'; // Adicione esta linha para especificar o nome correto da tabela
+    protected $table = 'jovens';
 
     /**
      * Os atributos que podem ser atribuídos em massa.
@@ -26,13 +26,17 @@ class Jovem extends Model
         'user_id',
         'data_nascimento',
         'telefone',
+        'endereco',
         'cidade',
         'estado',
-        'escolaridade',
+        'genero',
         'deficiencia',
+        'formacao_academica',
         'experiencia_profissional',
-        'area_interesse',
-        'curriculo_path',
+        'habilidades',
+        'link_portfolio',
+        'link_linkedin',
+        'curriculo_path', // Certifique-se que este campo está aqui para o upload de PDF
     ];
 
     /**

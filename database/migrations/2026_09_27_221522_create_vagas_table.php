@@ -12,11 +12,12 @@ return new class extends Migration
             $table->id();
             $table->foreignId('empresa_id')->constrained()->onDelete('cascade');
             $table->string('titulo');
-            $table->text('descricao');
-            $table->text('requisitos')->nullable();
-            $table->decimal('salario', 8, 2)->nullable();
-            $table->string('cidade');
-            $table->string('estado');
+            $table->longText('descricao'); // Alterado para longText para mais conteúdo
+            $table->longText('requisitos')->nullable(); // Alterado para longText
+            $table->string('localizacao'); // Adicionada
+            $table->string('tipo_contrato'); // Adicionada: Ex: CLT, PJ, Estágio
+            $table->decimal('salario', 10, 2)->nullable(); // Precisão ajustada
+            $table->text('beneficios')->nullable(); // Adicionada
             $table->string('status')->default('ativa'); // ativa, pausada, preenchida
             $table->timestamps();
         });
