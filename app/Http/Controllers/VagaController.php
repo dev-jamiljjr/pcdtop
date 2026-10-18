@@ -22,7 +22,8 @@ class VagaController extends Controller
         }
 
         $empresa = Auth::user()->empresa;
-        $vagas = $empresa->vagas()->latest()->paginate(10); // Pagina as vagas, mais recentes primeiro
+        // ALTERAÇÃO: Ordena as vagas pelo título em ordem alfabética (ascendente)
+        $vagas = $empresa->vagas()->orderBy('titulo', 'asc')->paginate(10);
 
         return view('vagas.index', compact('vagas'));
     }
@@ -138,8 +139,8 @@ class VagaController extends Controller
             abort(403, 'Acesso não autorizado. Apenas jovens podem consultar vagas.');
         }
 
-        // Busca todas as vagas ativas, ordenadas pelas mais recentes
-        $vagas = Vaga::where('status', 'ativa')->latest()->paginate(10);
+        // ALTERAÇÃO: Busca todas as vagas ativas, ordenadas pelo título em ordem alfabética (ascendente)
+        $vagas = Vaga::where('status', 'ativa')->orderBy('titulo', 'asc')->paginate(10);
         return view('vagas.search', compact('vagas'));
     }
 }

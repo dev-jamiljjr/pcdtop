@@ -2,22 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
-use App\Models\Empresa;
+use App\Models\User; // Assumindo que Jovens e Empresas são tipos de User
 use App\Models\Vaga;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\View\View;
 
 class PseController extends Controller
 {
-    // O MÉTODO __construct() FOI REMOVIDO PARA CORRIGIR O ERRO.
-    // A segurança agora é gerenciada no arquivo de rotas.
-
     /**
-     * Exibe o painel administrativo do PSE.
+     * Exibe o dashboard administrativo do PSE.
      */
-    public function dashboard(): View
+    public function dashboard()
     {
         $totalJovens = User::where('tipo_perfil', 'jovem')->count();
         $totalEmpresas = User::where('tipo_perfil', 'empresa')->count();
@@ -27,37 +21,29 @@ class PseController extends Controller
     }
 
     /**
-     * Exibe a listagem de jovens cadastrados.
+     * Lista todos os jovens cadastrados, ordenados alfabeticamente.
      */
-    public function listJovens(): View
+    public function listJovens()
     {
-        $jovens = User::where('tipo_perfil', 'jovem')
-                      ->with('jovem')
-                      ->latest()
-                      ->paginate(10);
+        $jovens = User::where('tipo_perfil', 'jovem')->orderBy('name', 'asc')->paginate(10); // Ordena pelo nome
         return view('pse.jovens.index', compact('jovens'));
     }
 
     /**
-     * Exibe a listagem de empresas cadastradas.
+     * Lista todas as empresas cadastradas, ordenadas alfabeticamente.
      */
-    public function listEmpresas(): View
+    public function listEmpresas()
     {
-        $empresas = User::where('tipo_perfil', 'empresa')
-                        ->with('empresa')
-                        ->latest()
-                        ->paginate(10);
+        $empresas = User::where('tipo_perfil', 'empresa')->orderBy('name', 'asc')->paginate(10); // Ordena pelo nome
         return view('pse.empresas.index', compact('empresas'));
     }
 
     /**
-     * Exibe a listagem de vagas cadastradas.
+     * Lista todas as vagas cadastradas, ordenadas alfabeticamente pelo título.
      */
-    public function listVagas(): View
+    public function listVagas()
     {
-        $vagas = Vaga::with('empresa.user')
-                     ->latest()
-                     ->paginate(10);
+        $vagas = Vaga::orderBy('titulo', 'asc')->paginate(10); // Ordena pelo título da vaga
         return view('pse.vagas.index', compact('vagas'));
     }
 }
