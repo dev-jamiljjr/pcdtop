@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Vaga;
-use App\Models\Candidatura; // Importação da classe Candidatura
-use App\Models\Jovem;       // Importação da classe Jovem
+use App\Models\Candidatura;
+use App\Models\Jovem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
@@ -13,13 +13,22 @@ use Illuminate\Validation\Rule;
 
 class VagaController extends Controller
 {
+    /**
+     * Exibe uma listagem das vagas da empresa logada, com a contagem de candidaturas.
+     */
     public function index(): View
     {
         if (Auth::user()->tipo_perfil !== 'empresa') {
             abort(403, 'Acesso não autorizado. Apenas empresas podem gerenciar vagas.');
         }
+
         $empresa = Auth::user()->empresa;
-        $vagas = $empresa->vagas()->orderBy('titulo', 'asc')->paginate(10);
+        // Carrega as vagas com a contagem de candidaturas associadas
+        $vagas = $empresa->vagas()
+                         ->withCount('candidaturas')
+                         ->orderBy('titulo', 'asc')
+                         ->paginate(10);
+
         return view('vagas.index', compact('vagas'));
     }
 
@@ -137,5 +146,49 @@ class VagaController extends Controller
         ]);
 
         return redirect()->back()->with('status', 'Candidatura realizada com sucesso!');
+    }
+
+    /**
+     * Exibe a lista de candidatos para uma vaga específica da empresa.
+     */
+    public function showCandidatos(Vaga $vaga): View
+    {
+        // Autorização: Apenas a empresa dona da vaga pode ver os candidatos
+        if (Auth::user()->tipo_perfil !== 'empresa' || Auth::user()->id !== $vaga->empresa->user_id) {
+            abort(403, 'Acesso não autorizado. Você não tem permissão para visualizar os candidatos desta vaga.');
+        }
+
+        // Carrega as candidaturas para a vaga, com os dados completos do jovem associado
+        $candidaturas = $vaga->candidaturas()
+                             ->with(['jovem.user']) // Carrega o jovem e seu usuário associado
+                             ->orderBy('created_at', 'desc') // Ordena as candidaturas pelas mais recentes
+                             ->paginate(10);
+
+        return view('vagas.candidatos.index', compact('vaga', 'candidaturas'));
+    }
+
+    /**
+     * Exibe o perfil completo de um jovem candidato para a empresa.
+     */
+    public function showJovemProfile(Vaga $vaga, Jovem $jovem): View
+    {
+        // 1. Autorização: Verificar se a empresa logada é dona da vaga
+        if (Auth::user()->tipo_perfil !== 'empresa' || Auth::user()->id !== $vaga->empresa->user_id) {
+            abort(403, 'Acesso não autorizado. Você não tem permissão para visualizar este perfil.');
+        }
+
+        // 2. Autorização: Verificar se o jovem realmente se candidatou a esta vaga
+        $candidaturaExiste = Candidatura::where('jovem_id', $jovem->id)
+                                        ->where('vaga_id', $vaga->id)
+                                        ->exists();
+
+        if (!$candidaturaExiste) {
+            abort(403, 'Acesso não autorizado. Este jovem não se candidatou a esta vaga.');
+        }
+
+        // 3. Carregar os dados completos do jovem, incluindo o usuário associado
+        $jovem->load('user');
+
+        return view('vagas.candidatos.jovem.show', compact('vaga', 'jovem'));
     }
 }

@@ -19,7 +19,7 @@ Route::get('/', function () {
     return view('home');
 })->name('home');
 
-// Rotas para as páginas principais (sem autenticação explícita)
+// Rotas para as páginas principais (públicas)
 Route::get('/jovem', function () { return view('jovem.index'); })->name('jovem.index');
 Route::get('/empresa', function () { return view('empresa.index'); })->name('empresa.index');
 Route::get('/pse', function () { return view('pse.index'); })->name('pse.index');
@@ -44,19 +44,26 @@ Route::middleware('auth')->group(function () {
         return redirect('/');
     })->name('logout.temp');
 
-    // Rotas para Gerenciamento de Vagas (Empresa)
+    // --- Rotas de Vagas ---
+    // Gerenciamento de Vagas (Empresa)
     Route::resource('vagas', VagaController::class)->except(['show']);
-    
-    // Rota para Consulta de Vagas (Jovem)
+    // Visualizar Candidatos de uma Vaga Específica (Empresa)
+    Route::get('/vagas/{vaga}/candidatos', [VagaController::class, 'showCandidatos'])->name('vagas.candidatos.index');
+    // Consulta de Vagas (Jovem)
     Route::get('/vagas/buscar', [VagaController::class, 'search'])->name('vagas.search');
-    
-    // Rota para Visualização de Detalhes da Vaga (Jovem e Empresa)
+    // Visualização de Detalhes da Vaga (Jovem e Empresa)
     Route::get('/vagas/{vaga}', [VagaController::class, 'show'])->name('vagas.show');
-
-    // Rota para Candidatura do Jovem a uma Vaga (NOVA ROTA)
+    // Candidatura do Jovem a uma Vaga
     Route::post('/vagas/{vaga}/candidatar', [VagaController::class, 'apply'])->name('vagas.apply');
 
-    // Rotas para a Área Administrativa do PSE
+    // Rotas para Gerenciamento de Vagas (Empresa)
+    Route::resource('vagas', VagaController::class)->except(['show']);
+    // Rota para Visualizar Candidatos de uma Vaga Específica (Empresa)
+    Route::get('/vagas/{vaga}/candidatos', [VagaController::class, 'showCandidatos'])->name('vagas.candidatos.index');
+    // Rota para Visualizar o Perfil de um Jovem Candidato (pela Empresa) - NOVA ROTA
+    Route::get('/vagas/{vaga}/candidatos/{jovem}/perfil', [VagaController::class, 'showJovemProfile'])->name('vagas.candidatos.jovem.show');
+
+    // --- Rotas Administrativas do PSE ---
     Route::prefix('admin/pse')->name('pse.')->middleware(CheckPseProfile::class)->group(function () {
         Route::get('/', [PseController::class, 'dashboard'])->name('dashboard');
         Route::get('/jovens', [PseController::class, 'listJovens'])->name('jovens.index');

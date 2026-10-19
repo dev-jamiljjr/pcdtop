@@ -8,7 +8,7 @@
         </div>
 
         @if (session('status'))
-            <div class="mb-4 font-medium text-sm text-green-600 bg-green-100 border border-green-400 rounded-md p-3">
+            <div class="alert alert-success mb-4" role="alert">
                 {{ session('status') }}
             </div>
         @endif
@@ -26,17 +26,27 @@
                         <p class="mb-1">{{ Str::limit($vaga->descricao, 100) }}</p>
                         <small class="text-muted">{{ $vaga->localizacao }} - {{ $vaga->tipo_contrato }}</small>
 
-                        <div class="mt-2">
-                            <a href="{{ route('vagas.edit', $vaga) }}" class="btn btn-sm btn-outline-secondary me-2">
-                                <i class="bi bi-pencil-fill me-1"></i>Editar
-                            </a>
-                            <form action="{{ route('vagas.destroy', $vaga) }}" method="POST" class="d-inline">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Tem certeza que deseja excluir esta vaga?')">
-                                    <i class="bi bi-trash-fill me-1"></i>Excluir
-                                </button>
-                            </form>
+                        <div class="mt-3 d-flex justify-content-between align-items-center">
+                            <div>
+                                <a href="{{ route('vagas.edit', $vaga) }}" class="btn btn-sm btn-outline-secondary me-2">
+                                    <i class="bi bi-pencil-fill me-1"></i>Editar
+                                </a>
+                                <form action="{{ route('vagas.destroy', $vaga) }}" method="POST" class="d-inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Tem certeza que deseja excluir esta vaga?')">
+                                        <i class="bi bi-trash-fill me-1"></i>Excluir
+                                    </button>
+                                </form>
+                            </div>
+                            <div>
+                                {{-- Novo botão para ver candidatos --}}
+                                <a href="{{ route('vagas.candidatos.index', $vaga->id) }}" class="btn btn-sm btn-info text-white">
+                                    <i class="bi bi-people-fill me-1"></i>
+                                    Ver Candidatos <span class="badge bg-light text-dark">{{ $vaga->candidaturas_count }}</span>
+                                </a>
+
+                            </div>
                         </div>
                     </div>
                 @endforeach

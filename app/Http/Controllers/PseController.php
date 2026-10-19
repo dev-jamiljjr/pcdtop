@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User; // Assumindo que Jovens e Empresas são tipos de User
+use App\Models\User;
 use App\Models\Vaga;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash; // Importar a classe Hash
-use Illuminate\Support\Facades\Log;   // Importar a classe Log
-use Illuminate\Support\Facades\Auth; // Importar Auth para logs e redirects
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 
 class PseController extends Controller
 {
@@ -24,11 +24,15 @@ class PseController extends Controller
     }
 
     /**
-     * Lista todos os jovens cadastrados, ordenados alfabeticamente.
+     * Lista todos os jovens cadastrados, ordenados alfabeticamente e carrega os detalhes do perfil jovem.
      */
     public function listJovens()
     {
-        $jovens = User::where('tipo_perfil', 'jovem')->orderBy('name', 'asc')->paginate(10); // Ordena pelo nome
+        // Carrega os usuários do tipo 'jovem' e eagerness carrega o relacionamento 'jovem'
+        $jovens = User::where('tipo_perfil', 'jovem')
+                      ->with('jovem') // Eager load the 'jovem' relationship
+                      ->orderBy('name', 'asc')
+                      ->paginate(10);
         return view('pse.jovens.index', compact('jovens'));
     }
 
@@ -37,7 +41,7 @@ class PseController extends Controller
      */
     public function listEmpresas()
     {
-        $empresas = User::where('tipo_perfil', 'empresa')->orderBy('name', 'asc')->paginate(10); // Ordena pelo nome
+        $empresas = User::where('tipo_perfil', 'empresa')->orderBy('name', 'asc')->paginate(10);
         return view('pse.empresas.index', compact('empresas'));
     }
 
@@ -46,7 +50,7 @@ class PseController extends Controller
      */
     public function listVagas()
     {
-        $vagas = Vaga::orderBy('titulo', 'asc')->paginate(10); // Ordena pelo título da vaga
+        $vagas = Vaga::orderBy('titulo', 'asc')->paginate(10);
         return view('pse.vagas.index', compact('vagas'));
     }
 
@@ -55,7 +59,6 @@ class PseController extends Controller
      */
     public function showAdminActivationForm()
     {
-        // Esta página só deve ser acessível se o usuário NÃO estiver logado
         if (Auth::check()) {
             return redirect('/');
         }
@@ -67,7 +70,6 @@ class PseController extends Controller
      */
     public function activateAdmin(Request $request)
     {
-        // Esta ação só deve ser processada se o usuário NÃO estiver logado
         if (Auth::check()) {
             return redirect('/');
         }
@@ -77,44 +79,39 @@ class PseController extends Controller
         ]);
 
         $inputPassword = $request->input('activation_password');
-        $storedHash = config('app.pse_activation_key_hash'); // Acessa o hash do .env
+        $storedHash = config('app.pse_activation_key_hash');
 
-        // Verifica se o hash está configurado
         if (empty($storedHash)) {
             Log::warning('PSE_ACTIVATION_KEY_HASH não configurado no .env!');
             return back()->with('error', 'Erro de configuração: Chave de ativação não encontrada.');
         }
 
-        // Compara a senha fornecida com o hash armazenado
         if (!Hash::check($inputPassword, $storedHash)) {
             Log::warning('Tentativa de ativação de administrador com senha incorreta: ' . $inputPassword);
             return back()->with('error', 'Senha de ativação incorreta.');
         }
 
-        // Credenciais corretas, prosseguir com a lógica
         $adminEmail = 'sereficiente@30dejulho.com.br';
-        $initialAdminPassword = 'pse@CEB1947'; // A senha que será setada no usuário
+        $initialAdminPassword = 'pse@CEB1947';
 
         $user = User::where('email', $adminEmail)->first();
 
         if (!$user) {
-            // Se o usuário não existe, criá-lo
             $user = User::create([
-                'name' => 'PSE Admin', // Nome padrão para o admin
+                'name' => 'PSE Admin',
                 'email' => $adminEmail,
-                'password' => Hash::make($initialAdminPassword), // Hasheia a senha inicial
+                'password' => Hash::make($initialAdminPassword),
                 'tipo_perfil' => 'pse',
             ]);
             Log::info("Usuário administrativo PSE '{$adminEmail}' criado com sucesso.");
-            Auth::login($user); // Loga o usuário administrativo automaticamente
+            Auth::login($user);
             return redirect()->route('profile.show')->with('status', 'Usuário administrativo PSE criado com sucesso!');
         } else {
-            // Se o usuário existe, garantir que o perfil seja 'pse' e a senha seja a padrão
             $user->password = Hash::make($initialAdminPassword);
             $user->tipo_perfil = 'pse';
             $user->save();
             Log::info("Usuário administrativo PSE '{$adminEmail}' atualizado com sucesso.");
-            Auth::login($user); // Loga o usuário administrativo automaticamente
+            Auth::login($user);
             return redirect()->route('profile.show')->with('status', 'Usuário administrativo PSE atualizado com sucesso!');
         }
     }
