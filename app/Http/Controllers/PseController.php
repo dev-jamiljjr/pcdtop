@@ -4,42 +4,57 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Vaga;
+use App\Models\Candidatura;
+use App\Models\Jovem; // Importar o modelo Jovem para o método showJovem
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\View\View;
 
 class PseController extends Controller
 {
     /**
      * Exibe o dashboard administrativo do PSE.
      */
-    public function dashboard()
+    public function dashboard(): View
     {
         $totalJovens = User::where('tipo_perfil', 'jovem')->count();
         $totalEmpresas = User::where('tipo_perfil', 'empresa')->count();
         $totalVagas = Vaga::count();
+        $totalCandidaturas = Candidatura::count();
 
-        return view('pse.dashboard', compact('totalJovens', 'totalEmpresas', 'totalVagas'));
+        return view('pse.dashboard', compact('totalJovens', 'totalEmpresas', 'totalVagas', 'totalCandidaturas'));
     }
 
     /**
      * Lista todos os jovens cadastrados, ordenados alfabeticamente e carrega os detalhes do perfil jovem.
      */
-    public function listJovens()
+    public function listJovens(): View
     {
-        // Carrega os usuários do tipo 'jovem' e eagerness carrega o relacionamento 'jovem'
         $jovens = User::where('tipo_perfil', 'jovem')
-                      ->with('jovem') // Eager load the 'jovem' relationship
+                      ->with('jovem')
                       ->orderBy('name', 'asc')
                       ->paginate(10);
         return view('pse.jovens.index', compact('jovens'));
     }
 
     /**
+     * Exibe o perfil completo de um jovem específico para o PSE.
+     */
+    public function showJovem(Jovem $jovem): View
+    {
+        // A autorização é feita pelo middleware CheckPseProfile na rota.
+        // Carrega o usuário associado ao jovem
+        $jovem->load('user');
+
+        return view('pse.jovens.show', compact('jovem'));
+    }
+
+    /**
      * Lista todas as empresas cadastradas, ordenadas alfabeticamente.
      */
-    public function listEmpresas()
+    public function listEmpresas(): View
     {
         $empresas = User::where('tipo_perfil', 'empresa')->orderBy('name', 'asc')->paginate(10);
         return view('pse.empresas.index', compact('empresas'));
@@ -48,7 +63,7 @@ class PseController extends Controller
     /**
      * Lista todas as vagas cadastradas, ordenadas alfabeticamente pelo título.
      */
-    public function listVagas()
+    public function listVagas(): View
     {
         $vagas = Vaga::orderBy('titulo', 'asc')->paginate(10);
         return view('pse.vagas.index', compact('vagas'));
@@ -114,5 +129,21 @@ class PseController extends Controller
             Auth::login($user);
             return redirect()->route('profile.show')->with('status', 'Usuário administrativo PSE atualizado com sucesso!');
         }
+    }
+
+    /**
+     * Lista todas as candidaturas registradas no sistema para o PSE.
+     */
+    public function listCandidaturas(): View
+    {
+        if (Auth::user()->tipo_perfil !== 'pse') {
+            abort(403, 'Acesso não autorizado. Apenas administradores PSE podem visualizar as candidaturas.');
+        }
+
+        $candidaturas = Candidatura::with(['jovem.user', 'vaga.empresa'])
+                                   ->orderBy('created_at', 'desc')
+                                   ->paginate(15);
+
+        return view('pse.candidaturas.index', compact('candidaturas'));
     }
 }

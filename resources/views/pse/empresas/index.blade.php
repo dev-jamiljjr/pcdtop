@@ -1,5 +1,9 @@
 <x-app-layout>
     <div class="container py-4">
+        <a href="{{ route('pse.dashboard') }}" class="btn btn-secondary mb-3">
+            <i class="bi bi-arrow-left me-2"></i>Voltar para Painel
+        </a>
+
         <h1 class="text-2xl font-bold mb-4">Empresas Cadastradas (PSE)</h1>
         <hr class="my-4">
 

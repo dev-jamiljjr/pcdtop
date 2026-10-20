@@ -49,6 +49,8 @@ Route::middleware('auth')->group(function () {
     Route::resource('vagas', VagaController::class)->except(['show']);
     // Visualizar Candidatos de uma Vaga Específica (Empresa)
     Route::get('/vagas/{vaga}/candidatos', [VagaController::class, 'showCandidatos'])->name('vagas.candidatos.index');
+    // Visualizar o Perfil de um Jovem Candidato (pela Empresa)
+    Route::get('/vagas/{vaga}/candidatos/{jovem}/perfil', [VagaController::class, 'showJovemProfile'])->name('vagas.candidatos.jovem.show');
     // Consulta de Vagas (Jovem)
     Route::get('/vagas/buscar', [VagaController::class, 'search'])->name('vagas.search');
     // Visualização de Detalhes da Vaga (Jovem e Empresa)
@@ -56,19 +58,15 @@ Route::middleware('auth')->group(function () {
     // Candidatura do Jovem a uma Vaga
     Route::post('/vagas/{vaga}/candidatar', [VagaController::class, 'apply'])->name('vagas.apply');
 
-    // Rotas para Gerenciamento de Vagas (Empresa)
-    Route::resource('vagas', VagaController::class)->except(['show']);
-    // Rota para Visualizar Candidatos de uma Vaga Específica (Empresa)
-    Route::get('/vagas/{vaga}/candidatos', [VagaController::class, 'showCandidatos'])->name('vagas.candidatos.index');
-    // Rota para Visualizar o Perfil de um Jovem Candidato (pela Empresa) - NOVA ROTA
-    Route::get('/vagas/{vaga}/candidatos/{jovem}/perfil', [VagaController::class, 'showJovemProfile'])->name('vagas.candidatos.jovem.show');
-
     // --- Rotas Administrativas do PSE ---
     Route::prefix('admin/pse')->name('pse.')->middleware(CheckPseProfile::class)->group(function () {
         Route::get('/', [PseController::class, 'dashboard'])->name('dashboard');
         Route::get('/jovens', [PseController::class, 'listJovens'])->name('jovens.index');
+        // NOVA ROTA para visualizar detalhes de um jovem específico
+        Route::get('/jovens/{jovem}', [PseController::class, 'showJovem'])->name('jovens.show');
         Route::get('/empresas', [PseController::class, 'listEmpresas'])->name('empresas.index');
         Route::get('/vagas', [PseController::class, 'listVagas'])->name('vagas.index');
+        Route::get('/candidaturas', [PseController::class, 'listCandidaturas'])->name('candidaturas.index');
     });
 });
 

@@ -17,7 +17,7 @@
             </div>
         @endif
 
-        <a href="{{ Auth::user()->tipo_perfil === 'jovem' ? route('vagas.search') : route('vagas.index') }}" class="btn btn-secondary mb-3">
+        <a href="{{ url()->previous() }}" class="btn btn-secondary mb-3">
             <i class="bi bi-arrow-left me-2"></i>Voltar
         </a>
         <h1 class="text-2xl font-bold mb-3">{{ $vaga->titulo }}</h1>
