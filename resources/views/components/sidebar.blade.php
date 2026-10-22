@@ -1,4 +1,4 @@
-<aside class="d-flex flex-column p-3 vh-100 position-fixed text-center" style="width: 107px; background-color: var(--pcdtop-dark-blue); color: #fff;">
+<aside class="d-flex flex-column p-3 vh-100 position-fixed text-center" style="width: 143px; background-color: var(--pcdtop-dark-blue); color: #fff;">
     {{-- Logo do Projeto --}}
     <a href="{{ route('home') }}" class="d-block mb-3">
         <img src="{{ asset('images/logo-pcdtop.png') }}" alt="Logo PCD TOP" style="max-height: 25px;">
@@ -7,12 +7,17 @@
     {{-- Itens de Navegação --}}
     <ul class="nav nav-pills flex-column mb-auto">
 
+        @php
+            // Estilo padrão para itens de menu ativos
+            $activeStyle = 'background-color: var(--pcdtop-yellow); color: var(--pcdtop-dark-blue); font-weight: bold; border-radius: 0.375rem;';
+        @endphp
+
         @guest
             {{-- LINKS PARA VISITANTES (NÃO LOGADOS) --}}
             <li class="nav-item">
                 <a href="{{ route('home') }}"
                    class="nav-link d-flex flex-column align-items-center py-3 {{ request()->routeIs('home') ? 'active' : 'text-white' }}"
-                   style="{{ request()->routeIs('home') ? 'background-color: var(--pcdtop-yellow); color: var(--pcdtop-dark-blue);' : '' }} border-radius: 0.375rem;">
+                   style="{{ request()->routeIs('home') ? $activeStyle : '' }}">
                     <i class="bi bi-house-door-fill fs-4 mb-1"></i>
                     <span style="font-size: 0.75rem;">Início</span>
                 </a>
@@ -20,7 +25,7 @@
             <li class="nav-item">
                 <a href="{{ route('login') }}"
                    class="nav-link d-flex flex-column align-items-center py-3 {{ request()->routeIs('login') ? 'active' : 'text-white' }}"
-                   style="{{ request()->routeIs('login') ? 'background-color: var(--pcdtop-yellow); color: var(--pcdtop-dark-blue);' : '' }} border-radius: 0.375rem;">
+                   style="{{ request()->routeIs('login') ? $activeStyle : '' }}">
                     <i class="bi bi-box-arrow-in-right fs-4 mb-1"></i>
                     <span style="font-size: 0.75rem;">Login</span>
                 </a>
@@ -28,7 +33,7 @@
             <li class="nav-item">
                 <a href="{{ route('register') }}"
                    class="nav-link d-flex flex-column align-items-center py-3 {{ request()->routeIs('register') ? 'active' : 'text-white' }}"
-                   style="{{ request()->routeIs('register') ? 'background-color: var(--pcdtop-yellow); color: var(--pcdtop-dark-blue);' : '' }} border-radius: 0.375rem;">
+                   style="{{ request()->routeIs('register') ? $activeStyle : '' }}">
                     <i class="bi bi-person-plus fs-4 mb-1"></i>
                     <span style="font-size: 0.75rem;">Registro</span>
                 </a>
@@ -37,7 +42,7 @@
             <li class="nav-item">
                 <a href="{{ route('pse.show-admin-activation-form') }}"
                    class="nav-link d-flex flex-column align-items-center py-3 {{ request()->routeIs('pse.show-admin-activation-form') ? 'active' : 'text-white' }}"
-                   style="{{ request()->routeIs('pse.show-admin-activation-form') ? 'background-color: var(--pcdtop-yellow); color: var(--pcdtop-dark-blue);' : '' }} border-radius: 0.375rem;">
+                   style="{{ request()->routeIs('pse.show-admin-activation-form') ? $activeStyle : '' }}">
                     <i class="bi bi-shield-lock fs-4 mb-1"></i>
                     <span style="font-size: 0.75rem;">Acesso Admin</span>
                 </a>
@@ -47,27 +52,44 @@
         @auth
             {{-- Links para usuários logados --}}
             <li class="nav-item">
-                <a href="{{ route('home') }}" class="nav-link d-flex flex-column align-items-center py-3 {{ request()->routeIs('home') ? 'active' : 'text-white' }}">
+                <a href="{{ route('home') }}"
+                   class="nav-link d-flex flex-column align-items-center py-3 {{ request()->routeIs('home') ? 'active' : 'text-white' }}"
+                   style="{{ request()->routeIs('home') ? $activeStyle : '' }}">
                     <i class="bi bi-speedometer2 fs-4 mb-1"></i><span style="font-size: 0.75rem;">Painel</span>
                 </a>
             </li>
             @if (Auth::user()->tipo_perfil === 'empresa')
                 <li class="nav-item">
-                    <a href="{{ route('vagas.index') }}" class="nav-link d-flex flex-column align-items-center py-3 {{ request()->routeIs('vagas.*') ? 'active' : 'text-white' }}">
+                    <a href="{{ route('vagas.index') }}"
+                       class="nav-link d-flex flex-column align-items-center py-3 {{ request()->routeIs('vagas.*') ? 'active' : 'text-white' }}"
+                       style="{{ request()->routeIs('vagas.*') ? $activeStyle : '' }}">
                         <i class="bi bi-card-list fs-4 mb-1"></i><span style="font-size: 0.75rem;">Minhas Vagas</span>
                     </a>
                 </li>
             @endif
             @if (Auth::user()->tipo_perfil === 'jovem')
                 <li class="nav-item">
-                    <a href="{{ route('vagas.search') }}" class="nav-link d-flex flex-column align-items-center py-3 {{ request()->routeIs('vagas.search') ? 'active' : 'text-white' }}">
+                    <a href="{{ route('vagas.search') }}"
+                       class="nav-link d-flex flex-column align-items-center py-3 {{ request()->routeIs('vagas.search') ? 'active' : 'text-white' }}"
+                       style="{{ request()->routeIs('vagas.search') ? $activeStyle : '' }}">
                         <i class="bi bi-search fs-4 mb-1"></i><span style="font-size: 0.75rem;">Buscar Vagas</span>
+                    </a>
+                </li>
+                {{-- Link para 'Minhas Candidaturas' (Jovem) --}}
+                <li class="nav-item">
+                    <a href="{{ route('jovem.candidaturas') }}"
+                       class="nav-link d-flex flex-column align-items-center py-3 {{ request()->routeIs('jovem.candidaturas') ? 'active' : 'text-white' }}"
+                       style="{{ request()->routeIs('jovem.candidaturas') ? $activeStyle : '' }}">
+                        <i class="bi bi-journal-check fs-4 mb-1"></i>
+                        <span style="font-size: 0.75rem;">Minhas Candidaturas</span>
                     </a>
                 </li>
             @endif
             @if (Auth::user()->tipo_perfil === 'pse')
                 <li class="nav-item">
-                    <a href="{{ route('pse.dashboard') }}" class="nav-link d-flex flex-column align-items-center py-3 {{ request()->routeIs('pse.*') ? 'active' : 'text-white' }}">
+                    <a href="{{ route('pse.dashboard') }}"
+                       class="nav-link d-flex flex-column align-items-center py-3 {{ request()->routeIs('pse.*') ? 'active' : 'text-white' }}"
+                       style="{{ request()->routeIs('pse.*') ? $activeStyle : '' }}">
                         <i class="bi bi-person-workspace fs-4 mb-1"></i><span style="font-size: 0.75rem;">Painel PSE</span>
                     </a>
                 </li>

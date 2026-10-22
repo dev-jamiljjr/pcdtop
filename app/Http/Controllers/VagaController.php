@@ -142,7 +142,7 @@ class VagaController extends Controller
         Candidatura::create([
             'jovem_id' => $jovem->id,
             'vaga_id' => $vaga->id,
-            'status' => 'pendente',
+            'status' => Candidatura::STATUS_PENDENTE, // Usando a constante
         ]);
 
         return redirect()->back()->with('status', 'Candidatura realizada com sucesso!');
@@ -190,5 +190,34 @@ class VagaController extends Controller
         $jovem->load('user');
 
         return view('vagas.candidatos.jovem.show', compact('vaga', 'jovem'));
+    }
+
+    /**
+     * Atualiza o status de uma candidatura para uma vaga específica.
+     */
+    public function updateCandidaturaStatus(Request $request, Vaga $vaga, Candidatura $candidatura): RedirectResponse
+    {
+        // 1. Autorização: Verificar se a empresa logada é dona da vaga
+        if (Auth::user()->tipo_perfil !== 'empresa' || Auth::user()->id !== $vaga->empresa->user_id) {
+            return redirect()->back()->with('error', 'Acesso não autorizado. Você não tem permissão para alterar o status desta candidatura.');
+        }
+
+        // 2. Autorização: Verificar se a candidatura pertence à vaga fornecida
+        if ($candidatura->vaga_id !== $vaga->id) {
+            return redirect()->back()->with('error', 'Candidatura não encontrada para a vaga especificada.');
+        }
+
+        // 3. Validação: Validar o novo status
+        $validated = $request->validate([
+            'status' => ['required', 'string', Rule::in(array_keys(Candidatura::STATUS_LABELS))],
+        ], [
+            'status.required' => 'O status é obrigatório.',
+            'status.in' => 'O status selecionado não é válido.',
+        ]);
+
+        // 4. Atualizar o status da candidatura
+        $candidatura->update(['status' => $validated['status']]);
+
+        return redirect()->back()->with('status', 'Status da candidatura atualizado com sucesso para "' . $candidatura->status_label . '".');
     }
 }

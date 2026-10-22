@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany; // Import adicionado
 
 class Jovem extends Model
 {
@@ -45,5 +46,13 @@ class Jovem extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Um jovem pode ter várias candidaturas.
+     */
+    public function candidaturas(): HasMany
+    {
+        return $this->hasMany(Candidatura::class);
     }
 }

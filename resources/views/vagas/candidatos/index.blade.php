@@ -7,6 +7,30 @@
         <h2 class="h4 text-muted mb-4">{{ $vaga->empresa->nome_fantasia }}</h2>
         <hr class="my-4">
 
+        {{-- Exibição de mensagens de status (sucesso ou erro) --}}
+        @if (session('status'))
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                {{ session('status') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+        @if (session('error'))
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                {{ session('error') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+        @if ($errors->any())
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <ul>
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+
         @if ($candidaturas->isEmpty())
             <div class="alert alert-info">Ainda não há candidatos para esta vaga.</div>
         @else
@@ -19,7 +43,20 @@
                         </div>
                         <p class="mb-1">E-mail: {{ $candidatura->jovem->user->email }}</p>
                         <p class="mb-1">Telefone: {{ $candidatura->jovem->telefone ?? 'N/A' }}</p>
-                        <p class="mb-1">Status da Candidatura: <span class="badge bg-info text-dark">{{ ucfirst($candidatura->status) }}</span></p>
+                        
+                        <div class="d-flex align-items-center mb-2">
+                            <label for="status-{{ $candidatura->id }}" class="form-label me-2 mb-0">Status:</label>
+                            <form action="{{ route('vagas.candidatos.updateStatus', ['vaga' => $vaga->id, 'candidatura' => $candidatura->id]) }}" method="POST" class="d-inline-flex">
+                                @csrf
+                                <select name="status" id="status-{{ $candidatura->id }}" class="form-select form-select-sm" onchange="this.form.submit()">
+                                    @foreach (\App\Models\Candidatura::STATUS_LABELS as $value => $label)
+                                        <option value="{{ $value }}" {{ $candidatura->status == $value ? 'selected' : '' }}>
+                                            {{ $label }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </form>
+                        </div>
 
                         <div class="mt-2">
                             {{-- Link para ver o perfil completo do jovem --}}
@@ -35,7 +72,6 @@
                             @else
                                 <button class="btn btn-sm btn-outline-secondary" disabled>Currículo não enviado</button>
                             @endif
-                            {{-- Funcionalidades futuras como mudar status, enviar mensagem, etc. --}}
                         </div>
                     </div>
                 @endforeach
