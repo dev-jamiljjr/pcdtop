@@ -6,8 +6,9 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\VagaController;
 use App\Http\Controllers\PseController;
-use App\Http\Controllers\JovemController; // Import adicionado
-use App\Http\Middleware\CheckPseProfile;
+use App\Http\Controllers\JovemController;
+use App\Http\Controllers\JovemProfileController; // Import JovemProfileController
+use App\Http\Middleware\CheckPseProfile; // Manter este import
 
 /*
 |--------------------------------------------------------------------------
@@ -64,6 +65,23 @@ Route::middleware('auth')->group(function () {
 
     // --- ROTA PARA MINHAS CANDIDATURAS (JOVEM) ---
     Route::get('/jovem/minhas-candidaturas', [JovemController::class, 'showMyCandidaturas'])->name('jovem.candidaturas');
+
+    // --- ROTAS DO ASSISTENTE DE PERFIL DO JOVEM (Cadastro/Atualização de Currículo) ---
+    Route::middleware(['is.jovem'])->prefix('jovem/meu-curriculo')->name('jovem.curriculo.')->group(function () {
+        Route::get('/etapa-1', [JovemProfileController::class, 'showStep1Form'])->name('step1');
+        Route::post('/etapa-1', [JovemProfileController::class, 'processStep1'])->name('step1.process');
+        Route::get('/etapa-2', [JovemProfileController::class, 'showStep2Form'])->name('step2');
+        Route::post('/etapa-2', [JovemProfileController::class, 'processStep2'])->name('step2.process');
+        Route::get('/etapa-3', [JovemProfileController::class, 'showStep3Form'])->name('step3');
+        Route::post('/etapa-3', [JovemProfileController::class, 'processStep3'])->name('step3.process');
+        Route::get('/etapa-4', [JovemProfileController::class, 'showStep4Form'])->name('step4'); // Para o formulário de upload de PDF
+        Route::post('/etapa-4', [JovemProfileController::class, 'processStep4'])->name('step4.process'); // Para processar o upload
+
+        // Rota para redirecionar o link do perfil
+        Route::get('/', function() {
+            return redirect()->route('jovem.curriculo.step1');
+        })->name('index');
+    });
 
     // --- Rotas Administrativas do PSE ---
     Route::prefix('admin/pse')->name('pse.')->middleware(CheckPseProfile::class)->group(function () {

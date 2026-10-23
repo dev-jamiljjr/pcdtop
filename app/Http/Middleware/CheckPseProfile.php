@@ -16,8 +16,9 @@ class CheckPseProfile
      */
     public function handle(Request $request, Closure $next): Response
     {
+        // Esta é a verificação correta para este arquivo
         if (!Auth::check() || Auth::user()->tipo_perfil !== 'pse') {
-            abort(403, 'Acesso não autorizado. Apenas usuários PSE podem acessar esta área.');
+            abort(403, 'Acesso não autorizado. Apenas administradores do PSE podem acessar esta área.');
         }
 
         return $next($request);

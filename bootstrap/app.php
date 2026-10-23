@@ -12,11 +12,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // ... outros middlewares já existentes ...
-
         // Registre seus middlewares de rota aqui
         $middleware->alias([
             'auth' => \App\Http\Middleware\Authenticate::class,
+            'is.jovem' => \App\Http\Middleware\CheckJovemProfile::class, // <<== LINHA ADICIONADA
             // ... outros aliases existentes ...
         ]);
     })

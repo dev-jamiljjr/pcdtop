@@ -68,10 +68,19 @@
             </div>
         @endif
 
+        {{-- CORREÇÃO: O botão de edição agora depende do tipo de usuário --}}
         <div class="mt-4">
-            <a href="{{ route('profile.edit') }}" class="btn btn-primary" style="background-color: var(--pcdtop-dark-blue); border-color: var(--pcdtop-dark-blue);">
-                Editar Perfil
-            </a>
+            @if (Auth::user()->tipo_perfil === 'jovem')
+                {{-- Para o Jovem, "Editar Perfil" leva ao assistente de currículo --}}
+                <a href="{{ route('jovem.curriculo.step1') }}" class="btn btn-primary">
+                    Editar Perfil / Currículo
+                </a>
+            @else
+                {{-- Para outros perfis (Empresa, PSE), edita os dados básicos da conta --}}
+                <a href="{{ route('profile.edit') }}" class="btn btn-primary">
+                    Editar Cadastro
+                </a>
+            @endif
         </div>
     </div>
 </x-app-layout>
