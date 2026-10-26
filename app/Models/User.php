@@ -6,13 +6,14 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Laravel\Fortify\TwoFactorAuthenticatable; // Certifique-se que esta linha está correta
-use Laravel\Sanctum\HasApiTokens;           // Certifique-se que esta linha está correta
+use Laravel\Fortify\TwoFactorAuthenticatable;
+use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use App\Notifications\CustomResetPasswordNotification; // Importe a notificação customizada
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, TwoFactorAuthenticatable, HasApiTokens; // Use todas as traits aqui
+    use HasFactory, Notifiable, TwoFactorAuthenticatable, HasApiTokens;
 
     /**
      * The attributes that are mass assignable.
@@ -34,8 +35,8 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
-        'two_factor_secret',        // Adicione esta linha se estiver usando Fortify
-        'two_factor_recovery_codes', // Adicione esta linha se estiver usando Fortify
+        'two_factor_secret',
+        'two_factor_recovery_codes',
     ];
 
     /**
@@ -62,5 +63,16 @@ class User extends Authenticatable
     public function empresa(): HasOne
     {
         return $this->hasOne(Empresa::class);
+    }
+
+    /**
+     * Envia a notificação de redefinição de senha customizada.
+     *
+     * @param  string  $token
+     * @return void
+     */
+    public function sendPasswordResetNotification($token)
+    {
+        $this->notify(new CustomResetPasswordNotification($token));
     }
 }

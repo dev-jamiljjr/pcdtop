@@ -7,8 +7,9 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\VagaController;
 use App\Http\Controllers\PseController;
 use App\Http\Controllers\JovemController;
-use App\Http\Controllers\JovemProfileController; // Import JovemProfileController
-use App\Http\Middleware\CheckPseProfile; // Manter este import
+use App\Http\Controllers\JovemProfileController;
+use App\Http\Middleware\CheckPseProfile;
+use App\Http\Controllers\Auth\CustomPasswordResetController; // Importa o nosso novo controller
 
 /*
 |--------------------------------------------------------------------------
@@ -31,6 +32,18 @@ Route::get('/acesso-admin', [PseController::class, 'showAdminActivationForm'])->
 Route::post('/acesso-admin', [PseController::class, 'activateAdmin'])->name('pse.activate-admin');
 
 
+// --- ROTAS CUSTOMIZADAS PARA REDEFINIÇÃO DE SENHA (INTERCEPTAM O FLUXO PADRÃO) ---
+// A rota GET captura o link do e-mail e mostra nosso formulário personalizado
+Route::get('/reset-password/{token}', [CustomPasswordResetController::class, 'showResetForm'])
+    ->middleware('guest')
+    ->name('password.reset');
+
+// A rota POST recebe os dados do nosso formulário e processa a atualização da senha
+Route::post('/reset-password', [CustomPasswordResetController::class, 'reset'])
+    ->middleware('guest')
+    ->name('password.store');
+
+
 // Grupo de rotas que exigem autenticação
 Route::middleware('auth')->group(function () {
     // Rotas de Perfil
@@ -47,20 +60,14 @@ Route::middleware('auth')->group(function () {
     })->name('logout.temp');
 
     // --- Rotas de Vagas ---
-    // Gerenciamento de Vagas (Empresa)
     Route::resource('vagas', VagaController::class)->except(['show']);
-    // Visualizar Candidatos de uma Vaga Específica (Empresa)
     Route::get('/vagas/{vaga}/candidatos', [VagaController::class, 'showCandidatos'])->name('vagas.candidatos.index');
-    // Visualizar o Perfil de um Jovem Candidato (pela Empresa)
     Route::get('/vagas/{vaga}/candidatos/{jovem}/perfil', [VagaController::class, 'showJovemProfile'])->name('vagas.candidatos.jovem.show');
-    // Atualizar o status de uma candidatura específica
     Route::post('/vagas/{vaga}/candidatos/{candidatura}/status', [VagaController::class, 'updateCandidaturaStatus'])->name('vagas.candidatos.updateStatus');
 
     // Consulta de Vagas (Jovem)
     Route::get('/vagas/buscar', [VagaController::class, 'search'])->name('vagas.search');
-    // Visualização de Detalhes da Vaga (Jovem e Empresa)
     Route::get('/vagas/{vaga}', [VagaController::class, 'show'])->name('vagas.show');
-    // Candidatura do Jovem a uma Vaga
     Route::post('/vagas/{vaga}/candidatar', [VagaController::class, 'apply'])->name('vagas.apply');
 
     // --- ROTA PARA MINHAS CANDIDATURAS (JOVEM) ---
@@ -74,10 +81,9 @@ Route::middleware('auth')->group(function () {
         Route::post('/etapa-2', [JovemProfileController::class, 'processStep2'])->name('step2.process');
         Route::get('/etapa-3', [JovemProfileController::class, 'showStep3Form'])->name('step3');
         Route::post('/etapa-3', [JovemProfileController::class, 'processStep3'])->name('step3.process');
-        Route::get('/etapa-4', [JovemProfileController::class, 'showStep4Form'])->name('step4'); // Para o formulário de upload de PDF
-        Route::post('/etapa-4', [JovemProfileController::class, 'processStep4'])->name('step4.process'); // Para processar o upload
+        Route::get('/etapa-4', [JovemProfileController::class, 'showStep4Form'])->name('step4');
+        Route::post('/etapa-4', [JovemProfileController::class, 'processStep4'])->name('step4.process');
 
-        // Rota para redirecionar o link do perfil
         Route::get('/', function() {
             return redirect()->route('jovem.curriculo.step1');
         })->name('index');
@@ -96,3 +102,4 @@ Route::middleware('auth')->group(function () {
 
 // Mantenha as outras rotas de autenticação no final
 require __DIR__.'/auth.php';
+

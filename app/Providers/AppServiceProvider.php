@@ -19,6 +19,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Todas as configurações relacionadas a Fortify e PasswordReset
+        // foram movidas para App\Providers\FortifyServiceProvider.php
     }
 }

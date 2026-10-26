@@ -28,8 +28,10 @@ Route::middleware('guest')->group(function () {
     Route::post('forgot-password', [PasswordResetLinkController::class, 'store'])
         ->name('password.email');
 
-    Route::get('reset-password/{token}', [NewPasswordController::class, 'create'])
-        ->name('password.reset');
+    // COMENTADO: Esta rota padrão estava em conflito com a nossa customizada.
+    // Agora nossa rota em routes/web.php será usada.
+    // Route::get('reset-password/{token}', [NewPasswordController::class, 'create'])
+    //     ->name('password.reset');
 
     Route::post('reset-password', [NewPasswordController::class, 'store'])
         ->name('password.store');
