@@ -5,92 +5,62 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
+use App\Models\Jovem;
+use App\Models\User;
+use Illuminate\Validation\Rule;
+use Illuminate\Support\Str;
 
-class JovemController extends Controller
+class JovemProfileController extends Controller
 {
+    // ... (o topo do arquivo permanece o mesmo) ...
+
     /**
-     * Exibe a página "Minhas Candidaturas" para o jovem logado.
+     * Processa os dados da Etapa 1: Dados Pessoais e avança para a próxima etapa.
      */
-    public function showMyCandidaturas(): View
+    public function processStep1(Request $request): RedirectResponse
     {
-        // 1. Autorização: Verificar se o usuário logado é um jovem.
-        if (Auth::user()->tipo_perfil !== 'jovem') {
-            abort(403, 'Acesso não autorizado. Apenas jovens podem visualizar suas candidaturas.');
-        }
-
-        // 2. Obter o perfil do jovem logado.
-        $jovem = Auth::user()->jovem;
-
-        // Se o perfil jovem não existir por algum motivo, redirecionar com erro.
-        if (!$jovem) {
-            // Este cenário é improvável se o registro for consistente, mas é uma boa prática.
-            return redirect()->route('home')->with('error', 'Seu perfil de jovem não foi encontrado.');
-        }
-
-        // 3. Buscar as candidaturas do jovem, carregando dados relacionados para otimização.
-        // O `with` evita múltiplas consultas ao banco de dados (problema N+1).
-        $candidaturas = $jovem->candidaturas()
-                              ->with(['vaga.empresa'])
-                              ->orderBy('created_at', 'desc')
-                              ->paginate(10);
-
-        // 4. Retornar a view com os dados das candidaturas.
-        return view('jovem.candidaturas.index', compact('candidaturas'));
+        // ... (código do processStep1 que você já tem, que está correto) ...
     }
 
     /**
-     * Display a listing of the resource.
+     * Exibe o formulário da Etapa 2: Endereço.
      */
-    public function index()
+    public function showStep2Form(Request $request): View
     {
-        //
+        $user = Auth::user();
+        $jovem = $user->jovem ?? new Jovem();
+        // Os dados da sessão são usados como fallback, mas os dados do banco têm prioridade
+        $data = $request->session()->get(self::SESSION_KEY, []);
+
+        return view('jovem.curriculo.step2', compact('data', 'jovem', 'user'));
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Processa os dados da Etapa 2: Endereço e avança para a próxima etapa.
      */
-    public function create()
+    public function processStep2(Request $request): RedirectResponse
     {
-        //
+        $validated = $request->validate([
+            'endereco' => ['nullable', 'string', 'max:255'],
+            'bairro' => ['nullable', 'string', 'max:100'], // Adicionado
+            'cidade' => ['nullable', 'string', 'max:100'],
+            'estado' => ['nullable', 'string', 'max:100'],
+            'cep' => ['nullable', 'string', 'max:10'], // Adicionado
+        ]);
+
+        $request->session()->put(self::SESSION_KEY . '.step2', $validated);
+
+        return redirect()->route('jovem.curriculo.step3');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
+    // ... (restante dos métodos do controller permanecem os mesmos) ...
 
     /**
-     * Display the specified resource.
+     * Processa os dados da Etapa 4: Finalizar (Upload de Currículo) e salva o perfil.
      */
-    public function show(string $id)
+    public function processStep4(Request $request): RedirectResponse
     {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        // ... (código do processStep4 que você já tem, que está correto) ...
     }
 }

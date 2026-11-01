@@ -1,96 +1,45 @@
 <x-app-layout>
     <div class="container py-4">
-        <h1 class="h2 mb-4">Cadastro de Currículo - Etapa 2: Endereço</h1>
-        <hr class="my-4">
+        <h1 class="h2 mb-4">Meu Currículo - Etapa 2 de 4</h1>
+        <p class="lead mb-4">Informe seu endereço para que as empresas possam encontrar você.</p>
 
-        {{-- Indicador de Etapas --}}
-        <div class="d-flex justify-content-between mb-4">
-            <div class="text-center flex-fill">
-                <span class="badge bg-secondary fs-6">1. Dados Pessoais</span>
-            </div>
-            <div class="text-center flex-fill">
-                <span class="badge bg-pcdtop-yellow text-pcdtop-dark-blue fs-6">2. Endereço</span>
-            </div>
-            <div class="text-center flex-fill">
-                <span class="badge bg-secondary fs-6">3. Formação e Experiência</span>
-            </div>
-            <div class="text-center flex-fill">
-                <span class="badge bg-secondary fs-6">4. Finalizar</span>
-            </div>
+        {{-- Barra de Progresso --}}
+        <div class="progress mb-4" role="progressbar" aria-label="Etapa 2 de 4" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100">
+            <div class="progress-bar" style="width: 50%"></div>
         </div>
 
-        {{-- Exibição de mensagens de status (sucesso ou erro) --}}
-        @if (session('status'))
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                {{ session('status') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        @endif
-        @if (session('error'))
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                {{ session('error') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        @endif
-
-        <div class="card shadow-sm p-4">
-            <form action="{{ route('jovem.curriculo.step2.process') }}" method="POST">
-                @csrf
-
-                {{-- Campo Endereço --}}
-                <div class="mb-3">
-                    <label for="endereco" class="form-label">Endereço</label>
-                    <input type="text" class="form-control @error('endereco') is-invalid @enderror" id="endereco" name="endereco" value="{{ old('endereco', $data['step2']['endereco'] ?? $jovem->endereco) }}" placeholder="Rua, número, bairro">
-                    @error('endereco')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
+        <form method="POST" action="{{ route('jovem.curriculo.step2.process') }}" class="card shadow-sm p-4">
+            @csrf
+            <h3 class="h4 mb-3">Endereço</h3>
+            <div class="row g-3">
+                <div class="col-12">
+                    <label for="endereco" class="form-label">Endereço (Rua, Número)</label>
+                    <input id="endereco" class="form-control" type="text" name="endereco" value="{{ old('endereco', $jovem->endereco) }}" />
                 </div>
-
-                {{-- Campo Cidade --}}
-                <div class="mb-3">
+                <div class="col-md-6">
+                    <label for="bairro" class="form-label">Bairro</label>
+                    <input id="bairro" class="form-control" type="text" name="bairro" value="{{ old('bairro', $jovem->bairro) }}" />
+                </div>
+                <div class="col-md-6">
+                    <label for="cep" class="form-label">CEP</label>
+                    <input id="cep" class="form-control" type="text" name="cep" value="{{ old('cep', $jovem->cep) }}" />
+                </div>
+                <div class="col-md-6">
                     <label for="cidade" class="form-label">Cidade</label>
-                    <input type="text" class="form-control @error('cidade') is-invalid @enderror" id="cidade" name="cidade" value="{{ old('cidade', $data['step2']['cidade'] ?? $jovem->cidade) }}" placeholder="Sua cidade">
-                    @error('cidade')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
+                    <input id="cidade" class="form-control" type="text" name="cidade" value="{{ old('cidade', $jovem->cidade) }}" />
                 </div>
-
-                {{-- Campo Estado --}}
-                <div class="mb-3">
+                <div class="col-md-6">
                     <label for="estado" class="form-label">Estado</label>
-                    <input type="text" class="form-control @error('estado') is-invalid @enderror" id="estado" name="estado" value="{{ old('estado', $data['step2']['estado'] ?? $jovem->estado) }}" placeholder="Seu estado (ex: SP, RJ)">
-                    @error('estado')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
+                    <input id="estado" class="form-control" type="text" name="estado" value="{{ old('estado', $jovem->estado) }}" />
                 </div>
+            </div>
 
-                <div class="d-flex justify-content-between">
-                    <a href="{{ route('jovem.curriculo.step1') }}" class="btn btn-secondary">Voltar</a>
-                    <button type="submit" class="btn btn-pcdtop-primary">Próximo</button>
-                </div>
-            </form>
-        </div>
+            <div class="d-flex justify-content-between mt-4">
+                <a href="{{ route('jovem.curriculo.step1') }}" class="btn btn-secondary"><i class="bi bi-arrow-left me-2"></i>Voltar</a>
+                <button type="submit" class="btn btn-primary" style="background-color: var(--pcdtop-dark-blue); border-color: var(--pcdtop-dark-blue);">
+                    Próximo <i class="bi bi-arrow-right ms-2"></i>
+                </button>
+            </div>
+        </form>
     </div>
 </x-app-layout>
-
-<style>
-    /* Estilos para o indicador de etapa ativa */
-    .bg-pcdtop-yellow {
-        background-color: var(--pcdtop-yellow) !important;
-    }
-    .text-pcdtop-dark-blue {
-        color: var(--pcdtop-dark-blue) !important;
-    }
-    /* CORREÇÃO: Estilo para o botão principal azul com texto branco */
-    .btn-pcdtop-primary {
-        background-color: var(--pcdtop-blue);
-        color: white;
-        border-color: var(--pcdtop-blue);
-        font-weight: bold;
-    }
-    .btn-pcdtop-primary:hover {
-        background-color: var(--pcdtop-dark-blue); /* Escurece no hover */
-        border-color: var(--pcdtop-dark-blue);
-        color: white;
-    }
-</style>
