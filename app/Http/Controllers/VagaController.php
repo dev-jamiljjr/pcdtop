@@ -23,7 +23,6 @@ class VagaController extends Controller
         }
 
         $empresa = Auth::user()->empresa;
-        // Carrega as vagas com a contagem de candidaturas associadas
         $vagas = $empresa->vagas()
                          ->withCount('candidaturas')
                          ->orderBy('titulo', 'asc')
@@ -142,7 +141,7 @@ class VagaController extends Controller
         Candidatura::create([
             'jovem_id' => $jovem->id,
             'vaga_id' => $vaga->id,
-            'status' => Candidatura::STATUS_PENDENTE, // Usando a constante
+            'status' => Candidatura::STATUS_PENDENTE,
         ]);
 
         return redirect()->back()->with('status', 'Candidatura realizada com sucesso!');
@@ -153,16 +152,20 @@ class VagaController extends Controller
      */
     public function showCandidatos(Vaga $vaga): View
     {
-        // Autorização: Apenas a empresa dona da vaga pode ver os candidatos
         if (Auth::user()->tipo_perfil !== 'empresa' || Auth::user()->id !== $vaga->empresa->user_id) {
             abort(403, 'Acesso não autorizado. Você não tem permissão para visualizar os candidatos desta vaga.');
         }
 
-        // Carrega as candidaturas para a vaga, com os dados completos do jovem associado
+        // <<< INÍCIO DA CORREÇÃO >>>
+        // Para ordenar pelo nome do jovem (que está no modelo User), precisamos fazer um join.
         $candidaturas = $vaga->candidaturas()
+                             ->join('jovens', 'candidaturas.jovem_id', '=', 'jovens.id')
+                             ->join('users', 'jovens.user_id', '=', 'users.id')
+                             ->select('candidaturas.*') // Seleciona todas as colunas de candidaturas para evitar conflitos
                              ->with(['jovem.user']) // Carrega o jovem e seu usuário associado
-                             ->orderBy('created_at', 'desc') // Ordena as candidaturas pelas mais recentes
+                             ->orderBy('users.name', 'asc') // Ordena pelo nome do usuário (jovem)
                              ->paginate(10);
+        // <<< FIM DA CORREÇÃO >>>
 
         return view('vagas.candidatos.index', compact('vaga', 'candidaturas'));
     }
@@ -172,12 +175,10 @@ class VagaController extends Controller
      */
     public function showJovemProfile(Vaga $vaga, Jovem $jovem): View
     {
-        // 1. Autorização: Verificar se a empresa logada é dona da vaga
         if (Auth::user()->tipo_perfil !== 'empresa' || Auth::user()->id !== $vaga->empresa->user_id) {
             abort(403, 'Acesso não autorizado. Você não tem permissão para visualizar este perfil.');
         }
 
-        // 2. Autorização: Verificar se o jovem realmente se candidatou a esta vaga
         $candidaturaExiste = Candidatura::where('jovem_id', $jovem->id)
                                         ->where('vaga_id', $vaga->id)
                                         ->exists();
@@ -186,7 +187,6 @@ class VagaController extends Controller
             abort(403, 'Acesso não autorizado. Este jovem não se candidatou a esta vaga.');
         }
 
-        // 3. Carregar os dados completos do jovem, incluindo o usuário associado
         $jovem->load('user');
 
         return view('vagas.candidatos.jovem.show', compact('vaga', 'jovem'));
@@ -197,17 +197,14 @@ class VagaController extends Controller
      */
     public function updateCandidaturaStatus(Request $request, Vaga $vaga, Candidatura $candidatura): RedirectResponse
     {
-        // 1. Autorização: Verificar se a empresa logada é dona da vaga
         if (Auth::user()->tipo_perfil !== 'empresa' || Auth::user()->id !== $vaga->empresa->user_id) {
             return redirect()->back()->with('error', 'Acesso não autorizado. Você não tem permissão para alterar o status desta candidatura.');
         }
 
-        // 2. Autorização: Verificar se a candidatura pertence à vaga fornecida
         if ($candidatura->vaga_id !== $vaga->id) {
             return redirect()->back()->with('error', 'Candidatura não encontrada para a vaga especificada.');
         }
 
-        // 3. Validação: Validar o novo status
         $validated = $request->validate([
             'status' => ['required', 'string', Rule::in(array_keys(Candidatura::STATUS_LABELS))],
         ], [
@@ -215,7 +212,6 @@ class VagaController extends Controller
             'status.in' => 'O status selecionado não é válido.',
         ]);
 
-        // 4. Atualizar o status da candidatura
         $candidatura->update(['status' => $validated['status']]);
 
         return redirect()->back()->with('status', 'Status da candidatura atualizado com sucesso para "' . $candidatura->status_label . '".');

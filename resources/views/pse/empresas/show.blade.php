@@ -1,0 +1,77 @@
+<x-app-layout>
+    <div class="container py-4">
+        <a href="{{ route('pse.empresas.index') }}" class="btn btn-secondary mb-3">
+            <i class="bi bi-arrow-left me-2"></i>Voltar para Lista de Empresas
+        </a>
+
+        <h1 class="h2 mb-4">Detalhes da Empresa: {{ $empresa->nome_fantasia ?? $empresa->user->name }}</h1>
+        <hr class="my-4">
+
+        <div class="card shadow-sm p-4 mb-3">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <h5 class="h6 text-muted">Informações Gerais</h5>
+                    <p><strong>Razão Social:</strong> {{ $empresa->razao_social ?? 'Não informado' }}</p>
+                    <p><strong>Nome Fantasia:</strong> {{ $empresa->nome_fantasia ?? 'Não informado' }}</p>
+                    <p><strong>CNPJ:</strong> {{ $empresa->cnpj ?? 'Não informado' }}</p>
+                    <p><strong>Website:</strong> 
+                        @if($empresa->website)
+                            <a href="{{ $empresa->website }}" target="_blank">{{ $empresa->website }}</a>
+                        @else
+                            Não informado
+                        @endif
+                    </p>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <h5 class="h6 text-muted">Contato Principal</h5>
+                    <p><strong>E-mail (Login):</strong> {{ $empresa->user->email ?? 'N/A' }}</p>
+                    <p><strong>E-mail de Contato:</strong> {{ $empresa->email_contato ?? 'Não informado' }}</p>
+                    <p><strong>Telefone:</strong> {{ $empresa->telefone ?? 'Não informado' }}</p>
+                </div>
+            </div>
+            <hr class="my-3">
+            <div class="row">
+                <div class="col-12 mb-3">
+                    <h5 class="h6 text-muted">Endereço</h5>
+                    <p><strong>Endereço:</strong> {{ $empresa->endereco ?? 'Não informado' }}</p>
+                    <p><strong>Bairro:</strong> {{ $empresa->bairro ?? 'Não informado' }}</p>
+                    <p><strong>Cidade/Estado:</strong> {{ ($empresa->cidade && $empresa->estado) ? $empresa->cidade . '/' . $empresa->estado : 'Não informado' }}</p>
+                    <p><strong>CEP:</strong> {{ $empresa->cep ?? 'Não informado' }}</p>
+                </div>
+            </div>
+            
+            @if ($empresa->contatos->isNotEmpty())
+                <hr class="my-3">
+                <h5 class="h6 text-muted mb-3">Contatos Adicionais</h5>
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>Cargo</th>
+                                <th>CPF</th>
+                                <th>Telefone</th>
+                                <th>E-mail</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($empresa->contatos as $contato)
+                                <tr>
+                                    <td>{{ $contato->nome }}</td>
+                                    <td>{{ $contato->cargo ?? 'N/A' }}</td>
+                                    <td>{{ $contato->cpf ?? 'N/A' }}</td>
+                                    <td>{{ $contato->telefone ?? 'N/A' }}</td>
+                                    <td>{{ $contato->email ?? 'N/A' }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @else
+                <hr class="my-3">
+                <p class="text-muted">Nenhum contato adicional cadastrado.</p>
+            @endif
+
+        </div>
+    </div>
+</x-app-layout>

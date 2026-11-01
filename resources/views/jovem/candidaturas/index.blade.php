@@ -25,17 +25,17 @@
                                     @case(\App\Models\Candidatura::STATUS_APROVADO)
                                         bg-success
                                         @break
-                                    @case(\App\Models\Candidatura::STATUS_REJEITADO)
+                                    @case(\App\Models\Candidatura::STATUS_NAO_APROVADO) {{-- CORREÇÃO AQUI --}}
                                         bg-danger
                                         @break
-                                    @case(\App\Models\Candidatura::STATUS_ENTREVISTA)
                                     @case(\App\Models\Candidatura::STATUS_EM_ANALISE)
+                                    @case(\App\Models\Candidatura::STATUS_ENTREVISTA)
                                         bg-primary
                                         @break
                                     @case(\App\Models\Candidatura::STATUS_VISUALIZADO)
                                         bg-info text-dark
                                         @break
-                                    @default
+                                    @default {{-- Para STATUS_PENDENTE ou qualquer outro não mapeado explicitamente --}}
                                         bg-secondary
                                 @endswitch
                                 text-white">

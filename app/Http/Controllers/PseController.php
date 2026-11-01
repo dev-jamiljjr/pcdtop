@@ -5,7 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Vaga;
 use App\Models\Candidatura;
-use App\Models\Jovem; // Importar o modelo Jovem para o método showJovem
+use App\Models\Jovem;
+use App\Models\Empresa; // <<< ADICIONADO
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
@@ -44,8 +45,6 @@ class PseController extends Controller
      */
     public function showJovem(Jovem $jovem): View
     {
-        // A autorização é feita pelo middleware CheckPseProfile na rota.
-        // Carrega o usuário associado ao jovem
         $jovem->load('user');
 
         return view('pse.jovens.show', compact('jovem'));
@@ -56,8 +55,20 @@ class PseController extends Controller
      */
     public function listEmpresas(): View
     {
-        $empresas = User::where('tipo_perfil', 'empresa')->orderBy('name', 'asc')->paginate(10);
+        $empresas = User::where('tipo_perfil', 'empresa')
+                        ->with('empresa') // Carrega os dados da empresa para a listagem
+                        ->orderBy('name', 'asc')
+                        ->paginate(10);
         return view('pse.empresas.index', compact('empresas'));
+    }
+
+    /**
+     * Exibe o perfil completo de uma empresa específica para o PSE.
+     */
+    public function showEmpresa(Empresa $empresa): View // <<< NOVO MÉTODO
+    {
+        $empresa->load(['user', 'contatos']); // Carrega o usuário associado e os contatos da empresa
+        return view('pse.empresas.show', compact('empresa'));
     }
 
     /**
@@ -140,8 +151,13 @@ class PseController extends Controller
             abort(403, 'Acesso não autorizado. Apenas administradores PSE podem visualizar as candidaturas.');
         }
 
-        $candidaturas = Candidatura::with(['jovem.user', 'vaga.empresa'])
-                                   ->orderBy('created_at', 'desc')
+        $candidaturas = Candidatura::select('candidaturas.*')
+                                   ->join('jovens', 'candidaturas.jovem_id', '=', 'jovens.id')
+                                   ->join('users', 'jovens.user_id', '=', 'users.id')
+                                   ->join('vagas', 'candidaturas.vaga_id', '=', 'vagas.id')
+                                   ->with(['jovem.user', 'vaga.empresa'])
+                                   ->orderBy('users.name', 'asc')
+                                   ->orderBy('vagas.titulo', 'asc')
                                    ->paginate(15);
 
         return view('pse.candidaturas.index', compact('candidaturas'));

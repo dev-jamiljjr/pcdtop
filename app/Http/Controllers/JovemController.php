@@ -2,65 +2,38 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Candidatura;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
-use Illuminate\Http\RedirectResponse;
-use App\Models\Jovem;
-use App\Models\User;
-use Illuminate\Validation\Rule;
-use Illuminate\Support\Str;
 
-class JovemProfileController extends Controller
+class JovemController extends Controller
 {
-    // ... (o topo do arquivo permanece o mesmo) ...
-
     /**
-     * Processa os dados da Etapa 1: Dados Pessoais e avança para a próxima etapa.
+     * Exibe a lista de candidaturas do jovem logado.
      */
-    public function processStep1(Request $request): RedirectResponse
+    public function showMyCandidaturas(): View
     {
-        // ... (código do processStep1 que você já tem, que está correto) ...
-    }
+        if (!Auth::check() || Auth::user()->tipo_perfil !== 'jovem') {
+            abort(403, 'Acesso não autorizado. Apenas jovens podem visualizar suas candidaturas.');
+        }
 
-    /**
-     * Exibe o formulário da Etapa 2: Endereço.
-     */
-    public function showStep2Form(Request $request): View
-    {
-        $user = Auth::user();
-        $jovem = $user->jovem ?? new Jovem();
-        // Os dados da sessão são usados como fallback, mas os dados do banco têm prioridade
-        $data = $request->session()->get(self::SESSION_KEY, []);
+        $jovem = Auth::user()->jovem;
 
-        return view('jovem.curriculo.step2', compact('data', 'jovem', 'user'));
-    }
+        if (!$jovem) {
+            return redirect()->route('jovem.curriculo.step1')->with('error', 'Por favor, complete seu perfil de jovem para visualizar suas candidaturas.');
+        }
 
-    /**
-     * Processa os dados da Etapa 2: Endereço e avança para a próxima etapa.
-     */
-    public function processStep2(Request $request): RedirectResponse
-    {
-        $validated = $request->validate([
-            'endereco' => ['nullable', 'string', 'max:255'],
-            'bairro' => ['nullable', 'string', 'max:100'], // Adicionado
-            'cidade' => ['nullable', 'string', 'max:100'],
-            'estado' => ['nullable', 'string', 'max:100'],
-            'cep' => ['nullable', 'string', 'max:10'], // Adicionado
-        ]);
+        // <<< INÍCIO DA CORREÇÃO >>>
+        // Para ordenar pelo título da vaga, precisamos fazer um join com a tabela 'vagas'.
+        $candidaturas = Candidatura::where('jovem_id', $jovem->id)
+                                   ->join('vagas', 'candidaturas.vaga_id', '=', 'vagas.id')
+                                   ->select('candidaturas.*') // Seleciona todas as colunas de candidaturas
+                                   ->with('vaga.empresa') // Carrega a vaga e a empresa associada
+                                   ->orderBy('vagas.titulo', 'asc') // Ordena pelo título da vaga
+                                   ->paginate(10);
+        // <<< FIM DA CORREÇÃO >>>
 
-        $request->session()->put(self::SESSION_KEY . '.step2', $validated);
-
-        return redirect()->route('jovem.curriculo.step3');
-    }
-
-    // ... (restante dos métodos do controller permanecem os mesmos) ...
-
-    /**
-     * Processa os dados da Etapa 4: Finalizar (Upload de Currículo) e salva o perfil.
-     */
-    public function processStep4(Request $request): RedirectResponse
-    {
-        // ... (código do processStep4 que você já tem, que está correto) ...
+        return view('jovem.candidaturas.index', compact('candidaturas'));
     }
 }

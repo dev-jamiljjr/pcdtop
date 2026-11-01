@@ -43,7 +43,7 @@ Route::post('/reset-password', [CustomPasswordResetController::class, 'reset'])
 
 
 // Grupo de rotas que exigem autenticação E E-MAIL VERIFICADO
-Route::middleware(['auth', 'verified'])->group(function () { // <-- ADICIONADO 'verified' aqui
+Route::middleware(['auth', 'verified'])->group(function () {
     // Rotas de Perfil
     Route::get('/perfil', [ProfileController::class, 'show'])->name('profile.show');
     Route::get('/perfil/editar', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -93,6 +93,7 @@ Route::middleware(['auth', 'verified'])->group(function () { // <-- ADICIONADO '
         Route::get('/jovens', [PseController::class, 'listJovens'])->name('jovens.index');
         Route::get('/jovens/{jovem}', [PseController::class, 'showJovem'])->name('jovens.show');
         Route::get('/empresas', [PseController::class, 'listEmpresas'])->name('empresas.index');
+        Route::get('/empresas/{empresa}', [PseController::class, 'showEmpresa'])->name('empresas.show'); // <<< NOVA ROTA ADICIONADA AQUI
         Route::get('/vagas', [PseController::class, 'listVagas'])->name('vagas.index');
         Route::get('/candidaturas', [PseController::class, 'listCandidaturas'])->name('candidaturas.index');
     });
