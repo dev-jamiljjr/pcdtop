@@ -16,18 +16,20 @@ class Empresa extends Model
         'razao_social',
         'nome_fantasia',
         'cnpj',
-        'telefone',
-        'email_contato',
-        'cidade',
-        'estado',
-        'endereco',
-        'ramo_atividade',
-        'website',
-        'descricao',
+        'telefone',      // Já existia na create_empresas_table
+        'email_contato', // Já existia na create_empresas_table
+        'cidade',        // Já existia na create_empresas_table
+        'estado',        // Já existia na create_empresas_table
+        'endereco',      // Já existia na create_empresas_table
+        'ramo_atividade',// Já existia na create_empresas_table
+        'website',       // Já existia na create_empresas_table (usado como "site")
+        'descricao',     // Já existia na create_empresas_table
+        'bairro',        // NOVO
+        'cep',           // NOVO
     ];
 
     /**
-     * Uma empresa pertence a um usuário.
+     * Define o relacionamento com o User.
      */
     public function user(): BelongsTo
     {
@@ -35,10 +37,18 @@ class Empresa extends Model
     }
 
     /**
-     * Uma empresa pode ter muitas vagas.
+     * Define o relacionamento com as Vagas.
      */
     public function vagas(): HasMany
     {
         return $this->hasMany(Vaga::class);
+    }
+
+    /**
+     * Define o relacionamento com os Contatos da Empresa.
+     */
+    public function contatos(): HasMany
+    {
+        return $this->hasMany(EmpresaContato::class);
     }
 }
