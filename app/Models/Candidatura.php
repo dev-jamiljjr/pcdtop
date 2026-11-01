@@ -10,22 +10,22 @@ class Candidatura extends Model
 {
     use HasFactory;
 
-    // Constantes para os status de candidatura
+    // Constantes para os status de candidatura (com a alteração)
     public const STATUS_PENDENTE = 'pendente';
     public const STATUS_VISUALIZADO = 'visualizado';
     public const STATUS_EM_ANALISE = 'em_analise';
     public const STATUS_ENTREVISTA = 'entrevista';
     public const STATUS_APROVADO = 'aprovado';
-    public const STATUS_REJEITADO = 'rejeitado';
+    public const STATUS_NAO_APROVADO = 'nao_aprovado'; // Alterado
 
-    // Array associativo para labels de exibição dos status
+    // Array associativo para labels de exibição dos status (com a alteração)
     public const STATUS_LABELS = [
         self::STATUS_PENDENTE => 'Pendente',
         self::STATUS_VISUALIZADO => 'Visualizado',
         self::STATUS_EM_ANALISE => 'Em Análise',
         self::STATUS_ENTREVISTA => 'Entrevista',
         self::STATUS_APROVADO => 'Aprovado',
-        self::STATUS_REJEITADO => 'Rejeitado',
+        self::STATUS_NAO_APROVADO => 'Não Aprovado', // Alterado
     ];
 
     protected $fillable = [
