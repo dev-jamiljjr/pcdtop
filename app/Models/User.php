@@ -6,14 +6,12 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Laravel\Fortify\TwoFactorAuthenticatable;
-use Laravel\Sanctum\HasApiTokens;
-use Illuminate\Database\Eloquent\Relations\HasOne;
-use App\Notifications\CustomResetPasswordNotification; // Importe a notificação customizada
+use App\Notifications\VerifyEmailNotification; // Sua notificação customizada
+use Illuminate\Database\Eloquent\Relations\HasOne; // Importar o Trait para relacionamentos
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
-    use HasFactory, Notifiable, TwoFactorAuthenticatable, HasApiTokens;
+    use HasFactory, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -24,7 +22,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'tipo_perfil',
+        'tipo_perfil', // Corrigido para 'tipo_perfil' conforme usado no controlador
     ];
 
     /**
@@ -35,8 +33,6 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
-        'two_factor_secret',
-        'two_factor_recovery_codes',
     ];
 
     /**
@@ -50,7 +46,17 @@ class User extends Authenticatable
     ];
 
     /**
-     * Um usuário pode ter um perfil de jovem associado.
+     * Send the email verification notification.
+     *
+     * @return void
+     */
+    public function sendEmailVerificationNotification()
+    {
+        $this->notify(new VerifyEmailNotification);
+    }
+
+    /**
+     * Define o relacionamento One-to-One com o perfil Jovem.
      */
     public function jovem(): HasOne
     {
@@ -58,21 +64,10 @@ class User extends Authenticatable
     }
 
     /**
-     * Um usuário pode ter um perfil de empresa associado.
+     * Define o relacionamento One-to-One com o perfil Empresa.
      */
     public function empresa(): HasOne
     {
         return $this->hasOne(Empresa::class);
-    }
-
-    /**
-     * Envia a notificação de redefinição de senha customizada.
-     *
-     * @param  string  $token
-     * @return void
-     */
-    public function sendPasswordResetNotification($token)
-    {
-        $this->notify(new CustomResetPasswordNotification($token));
     }
 }

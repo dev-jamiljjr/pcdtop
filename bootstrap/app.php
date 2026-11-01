@@ -16,9 +16,14 @@ return Application::configure(basePath: dirname(__DIR__))
         // Registre seus middlewares de rota aqui
         $middleware->alias([
             'auth' => \App\Http\Middleware\Authenticate::class,
-            'is.jovem' => \App\Http\Middleware\CheckJovemProfile::class, // <<== LINHA ADICIONADA
+            'is.jovem' => \App\Http\Middleware\CheckJovemProfile::class,
             // ... outros aliases existentes ...
         ]);
+
+        // Redireciona usuários autenticados para a rota raiz '/'
+        // Isso é importante após o login e também após a verificação do e-mail.
+        $middleware->redirectUsersTo('/'); // <--- LINHA ADICIONADA AQUI
+
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

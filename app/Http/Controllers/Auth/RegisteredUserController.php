@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Jovem;
 use App\Models\Empresa;
-// A importação de RouteServiceProvider foi REMOVIDA
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -14,7 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\View\View;
-use Closure; // Importar a classe Closure para validação customizada
+use Closure;
 
 class RegisteredUserController extends Controller
 {
@@ -25,16 +24,10 @@ class RegisteredUserController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        $request->validate([
+        $rules = [
             'name' => ['required', 'string', 'max:255'],
             'email' => [
-                'required',
-                'string',
-                'lowercase',
-                'email',
-                'max:255',
-                'unique:'.User::class,
-                // Adicionando a regra de validação customizada para o e-mail reservado
+                'required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class,
                 function (string $attribute, mixed $value, Closure $fail) {
                     if ($value === 'sereficiente@30dejulho.com.br') {
                         $fail('Registro Inválido! Este usuário está reservado!');
@@ -43,7 +36,15 @@ class RegisteredUserController extends Controller
             ],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'tipo_perfil' => ['required', 'string', 'in:jovem,empresa'],
-        ]);
+        ];
+
+        if ($request->tipo_perfil === 'jovem') {
+            $rules['cpf'] = ['required', 'string', 'digits:11', 'unique:jovens,cpf'];
+        } elseif ($request->tipo_perfil === 'empresa') {
+            $rules['cnpj'] = ['required', 'string', 'digits:14', 'unique:empresas,cnpj'];
+        }
+
+        $request->validate($rules);
 
         $user = User::create([
             'name' => $request->name,
@@ -53,13 +54,16 @@ class RegisteredUserController extends Controller
         ]);
 
         if ($request->tipo_perfil === 'jovem') {
-            Jovem::create(['user_id' => $user->id]);
+            Jovem::create([
+                'user_id' => $user->id,
+                'cpf' => $request->cpf,
+            ]);
         } elseif ($request->tipo_perfil === 'empresa') {
             Empresa::create([
                 'user_id' => $user->id,
                 'razao_social' => $request->name,
                 'nome_fantasia' => $request->name,
-                'cnpj' => '00.000.000/0000-' . uniqid(),
+                'cnpj' => $request->cnpj,
                 'email_contato' => $request->email,
             ]);
         }
@@ -67,7 +71,7 @@ class RegisteredUserController extends Controller
         event(new Registered($user));
         Auth::login($user);
 
-        // CORREÇÃO DEFINITIVA: Redireciona diretamente para a rota inicial
-        return redirect('/');
+        // ALTERAÇÃO: Redireciona para a tela "Verifique seu e-mail" em vez da home.
+        return redirect()->route('verification.notice');
     }
 }

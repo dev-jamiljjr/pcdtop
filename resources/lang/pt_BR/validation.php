@@ -1,16 +1,7 @@
 <?php
 
 return [
-    /*
-    |--------------------------------------------------------------------------
-    | Validation Language Lines
-    |--------------------------------------------------------------------------
-    |
-    | The following language lines contain the default error messages used by
-    | the validator class. Some of these rules have multiple versions such
-    | as the size rules. Feel free to tweak each of these messages here.
-    |
-    */
+    // ... todas as outras traduções que você já tem...
 
     'accepted'             => 'O campo :attribute deve ser aceito.',
     'active_url'           => 'O campo :attribute não é uma URL válida.',
@@ -113,33 +104,15 @@ return [
     'url'                  => 'O formato do campo :attribute é inválido.',
     'uuid'                 => 'O campo :attribute deve ser um UUID válido.',
 
-    /*
-    |--------------------------------------------------------------------------
-    | Custom Validation Language Lines
-    |--------------------------------------------------------------------------
-    |
-    | Here you may specify custom validation messages for attributes using the
-    | convention "attribute.rule" to name the lines. This makes it quick to
-    | specify a specific custom language line for a given attribute rule.
-    |
-    */
-
+    // ... AQUI ESTÁ A ALTERAÇÃO ...
     'custom' => [
+        'email' => [
+            'lowercase' => 'O campo e-mail deve estar em letras minúsculas.',
+        ],
         'attribute-name' => [
             'rule-name' => 'custom-message',
         ],
     ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Custom Validation Attributes
-    |--------------------------------------------------------------------------
-    |
-    | The following language lines are used to swap attribute place-holders
-    | with something more reader friendly such as E-Mail Address instead
-    | of "email". This simply helps us make messages a little cleaner.
-    |
-    */
 
     'attributes' => [
         'name'                  => 'nome',
@@ -171,7 +144,7 @@ return [
         'time'                  => 'hora',
         'available'             => 'disponível',
         'size'                  => 'tamanho',
-        // Adicione aqui os atributos que você usa nos seus formulários
+        // Atributos customizados do PCD TOP
         'data_nascimento'       => 'data de nascimento',
         'telefone'              => 'telefone',
         'genero'                => 'gênero',

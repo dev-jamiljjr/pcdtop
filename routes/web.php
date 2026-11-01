@@ -9,7 +9,7 @@ use App\Http\Controllers\PseController;
 use App\Http\Controllers\JovemController;
 use App\Http\Controllers\JovemProfileController;
 use App\Http\Middleware\CheckPseProfile;
-use App\Http\Controllers\Auth\CustomPasswordResetController; // Importa o nosso novo controller
+use App\Http\Controllers\Auth\CustomPasswordResetController;
 
 /*
 |--------------------------------------------------------------------------
@@ -33,19 +33,17 @@ Route::post('/acesso-admin', [PseController::class, 'activateAdmin'])->name('pse
 
 
 // --- ROTAS CUSTOMIZADAS PARA REDEFINIÇÃO DE SENHA (INTERCEPTAM O FLUXO PADRÃO) ---
-// A rota GET captura o link do e-mail e mostra nosso formulário personalizado
 Route::get('/reset-password/{token}', [CustomPasswordResetController::class, 'showResetForm'])
     ->middleware('guest')
     ->name('password.reset');
 
-// A rota POST recebe os dados do nosso formulário e processa a atualização da senha
 Route::post('/reset-password', [CustomPasswordResetController::class, 'reset'])
     ->middleware('guest')
     ->name('password.store');
 
 
-// Grupo de rotas que exigem autenticação
-Route::middleware('auth')->group(function () {
+// Grupo de rotas que exigem autenticação E E-MAIL VERIFICADO
+Route::middleware(['auth', 'verified'])->group(function () { // <-- ADICIONADO 'verified' aqui
     // Rotas de Perfil
     Route::get('/perfil', [ProfileController::class, 'show'])->name('profile.show');
     Route::get('/perfil/editar', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -102,4 +100,3 @@ Route::middleware('auth')->group(function () {
 
 // Mantenha as outras rotas de autenticação no final
 require __DIR__.'/auth.php';
-

@@ -56,5 +56,8 @@
                 }
             }
         </style>
+        
+        {{-- ADICIONADO: Ponto de injeção para scripts das views que usam @push('scripts') --}}
+        @stack('scripts') 
     </body>
 </html>

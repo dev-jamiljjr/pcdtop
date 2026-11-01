@@ -2,6 +2,10 @@
 
 namespace App\Providers;
 
+// Classes adicionadas para a customização da tela de verificação
+use Laravel\Fortify\Contracts\VerifyEmailViewResponse;
+use App\Http\Responses\VerifyEmailViewResponse as CustomVerifyEmailViewResponse;
+
 use App\Actions\Fortify\CreateNewUser;
 use App\Actions\Fortify\ResetUserPassword;
 use App\Actions\Fortify\UpdateUserPassword;
@@ -32,6 +36,9 @@ class FortifyServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // REGISTRO DA NOSSA CLASSE DE RESPOSTA CUSTOMIZADA
+        $this->app->singleton(VerifyEmailViewResponse::class, CustomVerifyEmailViewResponse::class);
+
         Log::info('DIAGNÓSTICO: FortifyServiceProvider@boot() foi executado.');
 
         // As outras ações continuam sendo registradas aqui
