@@ -17,7 +17,7 @@
             </div>
         @endif
 
-        <a href="{{ url()->previous() }}" class="btn btn-secondary mb-3">
+        <a href="{{ $backUrl }}" class="btn btn-secondary mb-3">
             <i class="bi bi-arrow-left me-2"></i>Voltar
         </a>
         <h1 class="text-2xl font-bold mb-3">{{ $vaga->titulo }}</h1>
@@ -54,10 +54,20 @@
                     </ul>
                     <div class="card-body">
                         @if (Auth::user()->tipo_perfil === 'jovem')
-                            @if ($candidatado)
-                                <button type="button" class="btn btn-secondary w-100" disabled>
-                                    <i class="bi bi-check-circle me-2"></i>Já Candidatado
+                            {{-- <<< ALTERAÇÃO AQUI: Lógica de exibição dos botões de candidatura/desistência >>> --}}
+                            @if ($userCandidatura)
+                                <button type="button" class="btn btn-secondary w-100 mb-2" disabled>
+                                    <i class="bi bi-check-circle me-2"></i>Já Candidatado ({{ $userCandidatura->status_label }})
                                 </button>
+                                @if ($userCandidatura->status === \App\Models\Candidatura::STATUS_PENDENTE)
+                                    <form action="{{ route('vagas.cancelApplication', $vaga->id) }}" method="POST">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-warning w-100">
+                                            <i class="bi bi-x-circle me-2"></i>Desistir da Vaga
+                                        </button>
+                                    </form>
+                                @endif
                             @else
                                 <form action="{{ route('vagas.apply', $vaga->id) }}" method="POST">
                                     @csrf

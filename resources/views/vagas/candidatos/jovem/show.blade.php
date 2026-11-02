@@ -37,7 +37,8 @@
                     @endif
                     <p class="mt-3"><strong>Currículo PDF:</strong>
                         @if ($jovem->curriculo_path)
-                            <a href="{{ Storage::url($jovem->curriculo_path) }}" target="_blank" class="btn btn-sm btn-info text-white">Visualizar Currículo</a>
+                            {{-- <<< ALTERAÇÃO AQUI: Aponta para a nova rota de visualização de PDF >>> --}}
+                            <a href="{{ route('vagas.candidatos.jovem.viewCurriculoPdf', ['vaga' => $vaga->id, 'jovem' => $jovem->id]) }}" target="_blank" class="btn btn-sm btn-info text-white">Visualizar Currículo</a>
                         @else
                             Não enviado
                         @endif

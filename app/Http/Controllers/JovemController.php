@@ -12,7 +12,7 @@ class JovemController extends Controller
     /**
      * Exibe a lista de candidaturas do jovem logado.
      */
-    public function showMyCandidaturas(): View
+    public function showMyCandidaturas(Request $request): View // <<< ALTERAÇÃO AQUI: Adiciona Request
     {
         if (!Auth::check() || Auth::user()->tipo_perfil !== 'jovem') {
             abort(403, 'Acesso não autorizado. Apenas jovens podem visualizar suas candidaturas.');
@@ -33,6 +33,9 @@ class JovemController extends Controller
                                    ->orderBy('vagas.titulo', 'asc') // Ordena pelo título da vaga
                                    ->paginate(10);
         // <<< FIM DA CORREÇÃO >>>
+
+        // <<< NOVA LINHA AQUI: Salva a URL da página de Minhas Candidaturas na sessão >>>
+        session()->put('vagas_return_url', $request->fullUrl());
 
         return view('jovem.candidaturas.index', compact('candidaturas'));
     }

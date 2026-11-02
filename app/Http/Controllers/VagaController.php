@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\StreamedResponse; // Adicione esta linha para StreamedResponse
 
 class VagaController extends Controller
 {
@@ -63,17 +65,19 @@ class VagaController extends Controller
             abort(403, 'Acesso não autorizado. Você não tem permissão para visualizar esta vaga.');
         }
 
-        $candidatado = false;
+        $userCandidatura = null;
         if (Auth::check() && Auth::user()->tipo_perfil === 'jovem') {
             $jovem = Auth::user()->jovem;
             if ($jovem) {
-                $candidatado = Candidatura::where('jovem_id', $jovem->id)
-                                          ->where('vaga_id', $vaga->id)
-                                          ->exists();
+                $userCandidatura = Candidatura::where('jovem_id', $jovem->id)
+                                              ->where('vaga_id', $vaga->id)
+                                              ->first();
             }
         }
 
-        return view('vagas.show', compact('vaga', 'candidatado'));
+        $backUrl = session('vagas_return_url', route('vagas.search'));
+
+        return view('vagas.show', compact('vaga', 'userCandidatura', 'backUrl'));
     }
 
     public function edit(Vaga $vaga): View
@@ -117,6 +121,9 @@ class VagaController extends Controller
             abort(403, 'Acesso não autorizado. Apenas jovens podem consultar vagas.');
         }
         $vagas = Vaga::where('status', 'ativa')->orderBy('titulo', 'asc')->paginate(10);
+
+        session()->put('vagas_return_url', $request->fullUrl());
+
         return view('vagas.search', compact('vagas'));
     }
 
@@ -156,16 +163,13 @@ class VagaController extends Controller
             abort(403, 'Acesso não autorizado. Você não tem permissão para visualizar os candidatos desta vaga.');
         }
 
-        // <<< INÍCIO DA CORREÇÃO >>>
-        // Para ordenar pelo nome do jovem (que está no modelo User), precisamos fazer um join.
         $candidaturas = $vaga->candidaturas()
                              ->join('jovens', 'candidaturas.jovem_id', '=', 'jovens.id')
                              ->join('users', 'jovens.user_id', '=', 'users.id')
-                             ->select('candidaturas.*') // Seleciona todas as colunas de candidaturas para evitar conflitos
-                             ->with(['jovem.user']) // Carrega o jovem e seu usuário associado
-                             ->orderBy('users.name', 'asc') // Ordena pelo nome do usuário (jovem)
+                             ->select('candidaturas.*')
+                             ->with(['jovem.user'])
+                             ->orderBy('users.name', 'asc')
                              ->paginate(10);
-        // <<< FIM DA CORREÇÃO >>>
 
         return view('vagas.candidatos.index', compact('vaga', 'candidaturas'));
     }
@@ -179,13 +183,22 @@ class VagaController extends Controller
             abort(403, 'Acesso não autorizado. Você não tem permissão para visualizar este perfil.');
         }
 
-        $candidaturaExiste = Candidatura::where('jovem_id', $jovem->id)
-                                        ->where('vaga_id', $vaga->id)
-                                        ->exists();
+        // --- INÍCIO DA ALTERAÇÃO ---
+        $candidatura = Candidatura::where('jovem_id', $jovem->id)
+                                  ->where('vaga_id', $vaga->id)
+                                  ->first();
 
-        if (!$candidaturaExiste) {
+        if (!$candidatura) {
             abort(403, 'Acesso não autorizado. Este jovem não se candidatou a esta vaga.');
         }
+
+        // Se o status da candidatura for 'Pendente', atualiza para 'Visualizado'
+        if ($candidatura->status === Candidatura::STATUS_PENDENTE) {
+            $candidatura->update(['status' => Candidatura::STATUS_VISUALIZADO]);
+            // Opcional: Adicionar uma mensagem de status para a empresa (pode ser útil para feedback imediato)
+            session()->flash('status', 'O status da candidatura foi atualizado para "Visualizado".');
+        }
+        // --- FIM DA ALTERAÇÃO ---
 
         $jovem->load('user');
 
@@ -215,5 +228,70 @@ class VagaController extends Controller
         $candidatura->update(['status' => $validated['status']]);
 
         return redirect()->back()->with('status', 'Status da candidatura atualizado com sucesso para "' . $candidatura->status_label . '".');
+    }
+
+    /**
+     * Permite que um jovem desista de uma candidatura pendente.
+     */
+    public function cancelApplication(Vaga $vaga, Request $request): RedirectResponse
+    {
+        if (!Auth::check() || Auth::user()->tipo_perfil !== 'jovem') {
+            abort(403, 'Acesso não autorizado. Apenas jovens podem desistir de candidaturas.');
+        }
+
+        $jovem = Auth::user()->jovem;
+        if (!$jovem) {
+            return redirect()->route('jovem.curriculo.step1')->with('error', 'Seu perfil de jovem não está completo.');
+        }
+
+        $candidatura = Candidatura::where('jovem_id', $jovem->id)
+                                  ->where('vaga_id', $vaga->id)
+                                  ->first();
+
+        if (!$candidatura) {
+            return redirect()->back()->with('error', 'Candidatura não encontrada.');
+        }
+
+        if ($candidatura->status !== Candidatura::STATUS_PENDENTE) {
+            return redirect()->back()->with('warning', 'Não é possível desistir de uma candidatura que não está "Pendente".');
+        }
+
+        $candidatura->delete();
+
+        return redirect()->back()->with('status', 'Candidatura retirada com sucesso!');
+    }
+
+    /**
+     * Permite à empresa visualizar o currículo PDF de um jovem, atualizando o status da candidatura.
+     */
+    public function viewJovemCurriculoPdf(Vaga $vaga, Jovem $jovem): StreamedResponse|RedirectResponse
+    {
+        if (Auth::user()->tipo_perfil !== 'empresa' || Auth::user()->id !== $vaga->empresa->user_id) {
+            abort(403, 'Acesso não autorizado. Você não tem permissão para visualizar este currículo.');
+        }
+
+        $candidatura = Candidatura::where('jovem_id', $jovem->id)
+                                  ->where('vaga_id', $vaga->id)
+                                  ->first();
+
+        if (!$candidatura) {
+            return redirect()->back()->with('error', 'Candidatura não encontrada para a vaga especificada.');
+        }
+
+        // Se o status da candidatura for 'Pendente', atualiza para 'Visualizado'
+        if ($candidatura->status === Candidatura::STATUS_PENDENTE) {
+            $candidatura->update(['status' => Candidatura::STATUS_VISUALIZADO]);
+            session()->flash('status', 'O status da candidatura foi atualizado para "Visualizado" após a visualização do currículo.');
+        }
+
+        if (!$jovem->curriculo_path || !Storage::exists($jovem->curriculo_path)) {
+            return redirect()->back()->with('error', 'Currículo PDF não encontrado.');
+        }
+
+        // Retorna o arquivo PDF para ser exibido no navegador
+        return Storage::response($jovem->curriculo_path, $jovem->user->name . '_curriculo.pdf', [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="' . $jovem->user->name . '_curriculo.pdf"',
+        ]);
     }
 }

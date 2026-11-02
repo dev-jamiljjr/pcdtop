@@ -6,8 +6,8 @@ use App\Models\User;
 use App\Models\Vaga;
 use App\Models\Candidatura;
 use App\Models\Jovem;
-use App\Models\Empresa; // <<< ADICIONADO
-use Illuminate\Http\Request;
+use App\Models\Empresa;
+use Illuminate\Http\Request; // Certifique-se de que esta linha está presente
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
@@ -56,7 +56,7 @@ class PseController extends Controller
     public function listEmpresas(): View
     {
         $empresas = User::where('tipo_perfil', 'empresa')
-                        ->with('empresa') // Carrega os dados da empresa para a listagem
+                        ->with('empresa')
                         ->orderBy('name', 'asc')
                         ->paginate(10);
         return view('pse.empresas.index', compact('empresas'));
@@ -65,9 +65,9 @@ class PseController extends Controller
     /**
      * Exibe o perfil completo de uma empresa específica para o PSE.
      */
-    public function showEmpresa(Empresa $empresa): View // <<< NOVO MÉTODO
+    public function showEmpresa(Empresa $empresa): View
     {
-        $empresa->load(['user', 'contatos']); // Carrega o usuário associado e os contatos da empresa
+        $empresa->load(['user', 'contatos']);
         return view('pse.empresas.show', compact('empresa'));
     }
 
@@ -76,6 +76,11 @@ class PseController extends Controller
      */
     public function listVagas(): View
     {
+        // --- INÍCIO DA ALTERAÇÃO ---
+        // Salva a URL da lista de vagas do PSE na sessão para o botão Voltar
+        session()->put('vagas_return_url', route('pse.vagas.index'));
+        // --- FIM DA ALTERAÇÃO ---
+
         $vagas = Vaga::orderBy('titulo', 'asc')->paginate(10);
         return view('pse.vagas.index', compact('vagas'));
     }
@@ -150,6 +155,11 @@ class PseController extends Controller
         if (Auth::user()->tipo_perfil !== 'pse') {
             abort(403, 'Acesso não autorizado. Apenas administradores PSE podem visualizar as candidaturas.');
         }
+
+        // --- INÍCIO DA ALTERAÇÃO ---
+        // Salva a URL da lista de candidaturas do PSE na sessão para o botão Voltar
+        session()->put('vagas_return_url', route('pse.candidaturas.index'));
+        // --- FIM DA ALTERAÇÃO ---
 
         $candidaturas = Candidatura::select('candidaturas.*')
                                    ->join('jovens', 'candidaturas.jovem_id', '=', 'jovens.id')

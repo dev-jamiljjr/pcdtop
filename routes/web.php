@@ -48,7 +48,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/perfil', [ProfileController::class, 'show'])->name('profile.show');
     Route::get('/perfil/editar', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/perfil', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/perfil', [ProfileController::class, 'destroy'])->name('profile.destroy'); // <<< NOVA ROTA DE DELEÇÃO
+    Route::delete('/perfil', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     // ROTA DE LOGOUT (GET)
     Route::get('/logout-temp', function (Request $request) {
@@ -62,12 +62,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('vagas', VagaController::class)->except(['show']);
     Route::get('/vagas/{vaga}/candidatos', [VagaController::class, 'showCandidatos'])->name('vagas.candidatos.index');
     Route::get('/vagas/{vaga}/candidatos/{jovem}/perfil', [VagaController::class, 'showJovemProfile'])->name('vagas.candidatos.jovem.show');
+    // <<< NOVA ROTA AQUI: Para visualizar o currículo PDF e atualizar o status >>>
+    Route::get('/vagas/{vaga}/candidatos/{jovem}/curriculo-pdf', [VagaController::class, 'viewJovemCurriculoPdf'])->name('vagas.candidatos.jovem.viewCurriculoPdf');
     Route::post('/vagas/{vaga}/candidatos/{candidatura}/status', [VagaController::class, 'updateCandidaturaStatus'])->name('vagas.candidatos.updateStatus');
 
     // Consulta de Vagas (Jovem)
     Route::get('/vagas/buscar', [VagaController::class, 'search'])->name('vagas.search');
     Route::get('/vagas/{vaga}', [VagaController::class, 'show'])->name('vagas.show');
     Route::post('/vagas/{vaga}/candidatar', [VagaController::class, 'apply'])->name('vagas.apply');
+    Route::delete('/vagas/{vaga}/cancelar-candidatura', [VagaController::class, 'cancelApplication'])->name('vagas.cancelApplication');
 
     // --- ROTA PARA MINHAS CANDIDATURAS (JOVEM) ---
     Route::get('/jovem/minhas-candidaturas', [JovemController::class, 'showMyCandidaturas'])->name('jovem.candidaturas');
@@ -94,7 +97,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/jovens', [PseController::class, 'listJovens'])->name('jovens.index');
         Route::get('/jovens/{jovem}', [PseController::class, 'showJovem'])->name('jovens.show');
         Route::get('/empresas', [PseController::class, 'listEmpresas'])->name('empresas.index');
-        Route::get('/empresas/{empresa}', [PseController::class, 'showEmpresa'])->name('empresas.show'); // <<< NOVA ROTA ADICIONADA AQUI
+        Route::get('/empresas/{empresa}', [PseController::class, 'showEmpresa'])->name('empresas.show');
         Route::get('/vagas', [PseController::class, 'listVagas'])->name('vagas.index');
         Route::get('/candidaturas', [PseController::class, 'listCandidaturas'])->name('candidaturas.index');
     });
