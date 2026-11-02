@@ -1,8 +1,6 @@
 <?php
 
 return [
-    // ... todas as outras traduções que você já tem...
-
     'accepted'             => 'O campo :attribute deve ser aceito.',
     'active_url'           => 'O campo :attribute não é uma URL válida.',
     'after'                => 'O campo :attribute deve ser uma data posterior a :date.',
@@ -21,6 +19,7 @@ return [
     ],
     'boolean'              => 'O campo :attribute deve ser verdadeiro ou falso.',
     'confirmed'            => 'A confirmação de :attribute não corresponde.',
+    'current_password'     => 'A senha fornecida está incorreta.', // <<< ALTERAÇÃO AQUI
     'date'                 => 'O campo :attribute não é uma data válida.',
     'date_format'          => 'O campo :attribute não corresponde ao formato :format.',
     'different'            => 'Os campos :attribute e :other devem ser diferentes.',
@@ -104,7 +103,6 @@ return [
     'url'                  => 'O formato do campo :attribute é inválido.',
     'uuid'                 => 'O campo :attribute deve ser um UUID válido.',
 
-    // ... AQUI ESTÁ A ALTERAÇÃO ...
     'custom' => [
         'email' => [
             'lowercase' => 'O campo e-mail deve estar em letras minúsculas.',

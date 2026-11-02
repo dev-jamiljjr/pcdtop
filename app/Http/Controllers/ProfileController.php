@@ -9,6 +9,7 @@ use Illuminate\View\View;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Redirect;
 
 class ProfileController extends Controller
 {
@@ -78,7 +79,7 @@ class ProfileController extends Controller
                 'contatos.*.telefone' => ['nullable', 'string', 'max:20'],
                 'contatos.*.email' => ['nullable', 'email', 'max:255', 'distinct'],
             ]);
-            
+
             foreach ($request->input('contatos', []) as $contatoData) {
                 // Remove campos vazios para não tentar salvar um contato em branco
                 $contatoData = array_filter($contatoData);
@@ -105,5 +106,27 @@ class ProfileController extends Controller
 
         // 5. Redirecionar com mensagem de sucesso
         return redirect()->route('profile.show')->with('status', 'Perfil atualizado com sucesso!');
+    }
+
+    /**
+     * Delete the user's account.
+     */
+    public function destroy(Request $request): RedirectResponse
+    {
+        // <<< ALTERAÇÃO AQUI: As mensagens customizadas foram removidas daqui
+        // para que o Laravel use as traduções globais do arquivo de validação.
+        $request->validateWithBag('userDeletion', [
+            'password' => ['required', 'current_password'],
+        ]);
+
+        $user = $request->user();
+
+        Auth::logout();
+        $user->delete();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return Redirect::route('home')->with('status', 'profile-deleted');
     }
 }

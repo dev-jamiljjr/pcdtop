@@ -1,7 +1,13 @@
 <x-app-layout>
     <div class="container py-4">
 
-        @if (session('status'))
+        {{-- Mensagem de status (incluindo para exclusão) --}}
+        @if (session('status') === 'profile-deleted')
+            <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+                Sua conta foi excluída com sucesso.
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @elseif (session('status'))
             <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
                 {{ session('status') }}
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -125,12 +131,58 @@
             <div class="alert alert-info">Esta é uma conta administrativa. Use o painel para gerenciar o sistema.</div>
         @endif
 
-        <div class="mt-4">
+        <div class="mt-4 d-flex gap-2"> {{-- Div para alinhar botões --}}
             @if (Auth::user()->tipo_perfil === 'jovem')
-                <a href="{{ route('jovem.curriculo.step1') }}" class="btn btn-primary" style="background-color: var(--pcdtop-dark-blue); border-color: var(--pcdtop-dark-blue);"><i class="bi bi-pencil-square me-2"></i>Editar Perfil / Currículo</a>
+                <a href="{{ route('jovem.curriculo.step1') }}" class="btn btn-primary" style="background-color: var(--pcdtop-dark-blue); border-color: var(--pcdtop-dark-blue);">
+                    <i class="bi bi-pencil-square me-2"></i>Editar Perfil / Currículo
+                </a>
             @else
-                <a href="{{ route('profile.edit') }}" class="btn btn-primary" style="background-color: var(--pcdtop-dark-blue); border-color: var(--pcdtop-dark-blue);"><i class="bi bi-pencil-square me-2"></i>Editar Cadastro</a>
+                <a href="{{ route('profile.edit') }}" class="btn btn-primary" style="background-color: var(--pcdtop-dark-blue); border-color: var(--pcdtop-dark-blue);">
+                    <i class="bi bi-pencil-square me-2"></i>Editar Cadastro
+                </a>
+            @endif
+
+            {{-- NOVO: Botão de exclusão (apenas para Jovem e Empresa) --}}
+            @if(in_array(Auth::user()->tipo_perfil, ['jovem', 'empresa']))
+                <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#confirmUserDeletionModal">
+                    <i class="bi bi-trash me-2"></i>Excluir Conta
+                </button>
             @endif
         </div>
     </div>
+
+    {{-- NOVO: Modal de confirmação de exclusão --}}
+    @if(in_array(Auth::user()->tipo_perfil, ['jovem', 'empresa']))
+    <div class="modal fade" id="confirmUserDeletionModal" tabindex="-1" aria-labelledby="confirmUserDeletionModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form method="post" action="{{ route('profile.destroy') }}">
+                    @csrf
+                    @method('delete')
+
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="confirmUserDeletionModalLabel">Confirmar Exclusão da Conta</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Você tem certeza que deseja excluir sua conta? Esta ação é permanente e todos os seus dados serão removidos.</p>
+                        <p>Para confirmar, por favor, digite sua senha:</p>
+                        
+                        <div class="mb-3">
+                            <label for="password_delete" class="form-label">Senha</label>
+                            <input type="password" class="form-control @error('password', 'userDeletion') is-invalid @enderror" id="password_delete" name="password" required>
+                            @error('password', 'userDeletion')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-danger">Confirmar Exclusão</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    @endif
 </x-app-layout>
