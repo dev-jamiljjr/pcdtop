@@ -38,13 +38,22 @@
                     <span style="font-size: 0.75rem;">Registro</span>
                 </a>
             </li>
-             {{-- NOVO LINK "ACESSO ADMIN" PARA VISITANTES --}}
+             {{-- LINK "ACESSO ADMIN" PARA VISITANTES --}}
             <li class="nav-item">
                 <a href="{{ route('pse.show-admin-activation-form') }}"
                    class="nav-link d-flex flex-column align-items-center py-3 {{ request()->routeIs('pse.show-admin-activation-form') ? 'active' : 'text-white' }}"
                    style="{{ request()->routeIs('pse.show-admin-activation-form') ? $activeStyle : '' }}">
                     <i class="bi bi-shield-lock fs-4 mb-1"></i>
                     <span style="font-size: 0.75rem;">Acesso Admin</span>
+                </a>
+            </li>
+            {{-- NOVO LINK "QUEM SOMOS?" PARA VISITANTES --}}
+            <li class="nav-item">
+                <a href="{{ route('quem-somos') }}"
+                   class="nav-link d-flex flex-column align-items-center py-3 {{ request()->routeIs('quem-somos') ? 'active' : 'text-white' }}"
+                   style="{{ request()->routeIs('quem-somos') ? $activeStyle : '' }}">
+                    <i class="bi bi-info-circle-fill fs-4 mb-1"></i> {{-- Ícone de informação --}}
+                    <span style="font-size: 0.75rem;">Quem Somos?</span>
                 </a>
             </li>
         @endguest

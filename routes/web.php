@@ -31,6 +31,10 @@ Route::get('/pse', function () { return view('pse.index'); })->name('pse.index')
 Route::get('/acesso-admin', [PseController::class, 'showAdminActivationForm'])->name('pse.show-admin-activation-form');
 Route::post('/acesso-admin', [PseController::class, 'activateAdmin'])->name('pse.activate-admin');
 
+// --- NOVA ROTA AQUI: Para a página "Quem Somos?" (pública) ---
+Route::get('/quem-somos', function () {
+    return view('quem-somos');
+})->name('quem-somos');
 
 // --- ROTAS CUSTOMIZADAS PARA REDEFINIÇÃO DE SENHA (INTERCEPTAM O FLUXO PADRÃO) ---
 Route::get('/reset-password/{token}', [CustomPasswordResetController::class, 'showResetForm'])
@@ -62,7 +66,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('vagas', VagaController::class)->except(['show']);
     Route::get('/vagas/{vaga}/candidatos', [VagaController::class, 'showCandidatos'])->name('vagas.candidatos.index');
     Route::get('/vagas/{vaga}/candidatos/{jovem}/perfil', [VagaController::class, 'showJovemProfile'])->name('vagas.candidatos.jovem.show');
-    // <<< NOVA ROTA AQUI: Para visualizar o currículo PDF e atualizar o status >>>
+    // <<< NOVA ROTA ADICIONADA AQUI >>>
     Route::get('/vagas/{vaga}/candidatos/{jovem}/curriculo-pdf', [VagaController::class, 'viewJovemCurriculoPdf'])->name('vagas.candidatos.jovem.viewCurriculoPdf');
     Route::post('/vagas/{vaga}/candidatos/{candidatura}/status', [VagaController::class, 'updateCandidaturaStatus'])->name('vagas.candidatos.updateStatus');
 

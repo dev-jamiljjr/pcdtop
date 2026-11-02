@@ -11,7 +11,7 @@ use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Storage;
-use Symfony\Component\HttpFoundation\StreamedResponse; // Adicione esta linha para StreamedResponse
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class VagaController extends Controller
 {
@@ -183,7 +183,6 @@ class VagaController extends Controller
             abort(403, 'Acesso não autorizado. Você não tem permissão para visualizar este perfil.');
         }
 
-        // --- INÍCIO DA ALTERAÇÃO ---
         $candidatura = Candidatura::where('jovem_id', $jovem->id)
                                   ->where('vaga_id', $vaga->id)
                                   ->first();
@@ -198,7 +197,6 @@ class VagaController extends Controller
             // Opcional: Adicionar uma mensagem de status para a empresa (pode ser útil para feedback imediato)
             session()->flash('status', 'O status da candidatura foi atualizado para "Visualizado".');
         }
-        // --- FIM DA ALTERAÇÃO ---
 
         $jovem->load('user');
 
@@ -284,12 +282,13 @@ class VagaController extends Controller
             session()->flash('status', 'O status da candidatura foi atualizado para "Visualizado" após a visualização do currículo.');
         }
 
-        if (!$jovem->curriculo_path || !Storage::exists($jovem->curriculo_path)) {
+        // <<< ALTERAÇÃO AQUI: Especifica o disco 'public' para Storage::exists() e Storage::response() >>>
+        if (!$jovem->curriculo_path || !Storage::disk('public')->exists($jovem->curriculo_path)) {
             return redirect()->back()->with('error', 'Currículo PDF não encontrado.');
         }
 
         // Retorna o arquivo PDF para ser exibido no navegador
-        return Storage::response($jovem->curriculo_path, $jovem->user->name . '_curriculo.pdf', [
+        return Storage::disk('public')->response($jovem->curriculo_path, $jovem->user->name . '_curriculo.pdf', [
             'Content-Type' => 'application/pdf',
             'Content-Disposition' => 'inline; filename="' . $jovem->user->name . '_curriculo.pdf"',
         ]);
