@@ -68,7 +68,7 @@
 
                 <div class="mt-3">
                     <p><strong>Currículo PDF:</strong>
-                        @if (Auth::user()->jovem->curriculo_path) {{-- <<< CORREÇÃO AQUI --}}
+                        @if (Auth::user()->jovem->curriculo_path)
                             <a href="{{ Storage::url(Auth::user()->jovem->curriculo_path) }}" target="_blank" class="btn btn-sm btn-info text-white"><i class="bi bi-file-earmark-pdf me-1"></i>Visualizar Currículo</a>
                         @else
                             <span class="text-muted">Não enviado</span>
@@ -79,8 +79,50 @@
         @elseif (Auth::user()->tipo_perfil === 'empresa' && Auth::user()->empresa)
             <h2 class="h4 mb-3">Detalhes do Perfil Empresa</h2>
             <div class="card shadow-sm p-4 mb-3">
-                {{-- Código da Empresa --}}
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <h5 class="h6 text-muted">Dados da Empresa</h5>
+                        <p><strong>Razão Social:</strong> {{ Auth::user()->empresa->razao_social ?? 'Não informado' }}</p>
+                        <p><strong>Nome Fantasia:</strong> {{ Auth::user()->empresa->nome_fantasia ?? 'Não informado' }}</p>
+                        <p><strong>CNPJ:</strong> {{ Auth::user()->empresa->cnpj ?? 'Não informado' }}</p>
+                        <p><strong>Email de Contato:</strong> {{ Auth::user()->empresa->email_contato ?? 'Não informado' }}</p>
+                        <p><strong>Telefone:</strong> {{ Auth::user()->empresa->telefone ?? 'Não informado' }}</p>
+                        <p><strong>Website:</strong>
+                            @if(Auth::user()->empresa->website)
+                                <a href="{{ Auth::user()->empresa->website }}" target="_blank" rel="noopener noreferrer">{{ Auth::user()->empresa->website }}</a>
+                            @else
+                                Não informado
+                            @endif
+                        </p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <h5 class="h6 text-muted">Endereço da Empresa</h5>
+                        <p><strong>Endereço:</strong> {{ Auth::user()->empresa->endereco ?? 'Não informado' }}</p>
+                        <p><strong>Bairro:</strong> {{ Auth::user()->empresa->bairro ?? 'Não informado' }}</p>
+                        <p><strong>Cidade/Estado:</strong> {{ (Auth::user()->empresa->cidade && Auth::user()->empresa->estado) ? Auth::user()->empresa->cidade . '/' . Auth::user()->empresa->estado : 'Não informado' }}</p>
+                        <p><strong>CEP:</strong> {{ Auth::user()->empresa->cep ?? 'Não informado' }}</p>
+                    </div>
+                </div>
+
+                @if (Auth::user()->empresa->contatos->isNotEmpty())
+                    <hr class="my-3">
+                    <h5 class="h6 text-muted mb-2">Contatos da Empresa</h5>
+                    @foreach (Auth::user()->empresa->contatos as $contato)
+                        <div class="card card-body p-3 mb-2 bg-light">
+                            <p class="mb-1"><strong>Nome:</strong> {{ $contato->nome ?? 'Não informado' }}</p>
+                            <p class="mb-1"><strong>Cargo:</strong> {{ $contato->cargo ?? 'Não informado' }}</p>
+                            <p class="mb-1"><strong>CPF:</strong> {{ $contato->cpf ?? 'Não informado' }}</p>
+                            <p class="mb-1"><strong>Telefone:</strong> {{ $contato->telefone ?? 'Não informado' }}</p>
+                            <p class="mb-0"><strong>Email:</strong> {{ $contato->email ?? 'Não informado' }}</p>
+                        </div>
+                    @endforeach
+                @else
+                    <hr class="my-3">
+                    <p class="text-muted">Nenhum contato cadastrado.</p>
+                @endif
             </div>
+        @elseif (Auth::user()->tipo_perfil === 'pse')
+            <div class="alert alert-info">Esta é uma conta administrativa. Use o painel para gerenciar o sistema.</div>
         @endif
 
         <div class="mt-4">
