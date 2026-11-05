@@ -11,13 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // A migração original já criava a foreign key, mas sem o onDelete('restrict').
+        // Para alterar o comportamento de uma foreign key, é preciso primeiro removê-la,
+        // e depois adicioná-la novamente com as novas opções.
         Schema::table('candidaturas', function (Blueprint $table) {
-            // CORREÇÃO: Removemos a linha que tentava apagar a chave estrangeira.
-            // Agora, apenas adicionamos a chave correta, que está faltando no banco de dados.
+            $table->dropForeign(['vaga_id']); // Remove a foreign key existente
             $table->foreign('vaga_id')
                   ->references('id')
                   ->on('vagas')
-                  ->onDelete('restrict'); // Impede a exclusão em cascata indesejada.
+                  ->onDelete('restrict'); // Adiciona com a nova regra
         });
     }
 
@@ -26,15 +28,15 @@ return new class extends Migration
      */
     public function down(): void
     {
+        // Para reverter, removemos a foreign key com 'restrict' e a recriamos
+        // com o comportamento padrão anterior (que geralmente é 'cascade' ou 'no action'
+        // se não especificado, mas vamos considerar 'cascade' para esta reversão).
         Schema::table('candidaturas', function (Blueprint $table) {
-            // O método down agora só precisa apagar a chave que criamos no 'up'.
             $table->dropForeign(['vaga_id']);
-            
-            // Opcional, mas bom para consistência: recria a chave original com 'cascade'.
             $table->foreign('vaga_id')
                   ->references('id')
                   ->on('vagas')
-                  ->onDelete('cascade');
+                  ->onDelete('cascade'); // Reverte para o comportamento anterior (ou o que era desejado)
         });
     }
 };
