@@ -46,6 +46,7 @@ class RegisteredUserController extends Controller
 
         $request->validate($rules);
 
+        // O status será 'bloqueado' por padrão, graças à migration
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
@@ -71,7 +72,11 @@ class RegisteredUserController extends Controller
         event(new Registered($user));
         Auth::login($user);
 
-        // ALTERAÇÃO: Redireciona para a tela "Verifique seu e-mail" em vez da home.
+        // --- ALTERAÇÃO AQUI ---
+        // Adiciona a mensagem de boas-vindas e pendência na sessão
+        $request->session()->flash('status_registro', 'Seja bem-vindo(a) ao PCD TOP! Seu cadastro foi realizado com sucesso! Para garantir a segurança e a privacidade das informações da plataforma, seu acesso será validado pelo Programa Ser Eficiente. Logo você será notificado sobre seu cadastro. Em até 48 horas úteis, receberá uma notificação informando sobre a aprovação e a liberação do seu acesso completo à plataforma. Enquanto isso, pedimos que aguarde. Em breve, você poderá explorar todos os recursos do PCD TOP! Obrigado por fazer parte dessa iniciativa!');
+
+        // Redireciona para a tela "Verifique seu e-mail"
         return redirect()->route('verification.notice');
     }
 }

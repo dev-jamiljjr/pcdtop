@@ -7,11 +7,12 @@ use App\Models\Vaga;
 use App\Models\Candidatura;
 use App\Models\Jovem;
 use App\Models\Empresa;
-use Illuminate\Http\Request; // Certifique-se de que esta linha está presente
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
 
 class PseController extends Controller
 {
@@ -20,24 +21,54 @@ class PseController extends Controller
      */
     public function dashboard(): View
     {
+        // Limpa a URL de retorno ao voltar para o dashboard para evitar comportamento inesperado
+        session()->forget('pse_users_return_url');
+
         $totalJovens = User::where('tipo_perfil', 'jovem')->count();
         $totalEmpresas = User::where('tipo_perfil', 'empresa')->count();
         $totalVagas = Vaga::count();
         $totalCandidaturas = Candidatura::count();
+        
+        $jovensBloqueados = User::where('tipo_perfil', 'jovem')->where('status', User::STATUS_BLOQUEADO)->count();
+        $empresasBloqueadas = User::where('tipo_perfil', 'empresa')->where('status', User::STATUS_BLOQUEADO)->count();
 
-        return view('pse.dashboard', compact('totalJovens', 'totalEmpresas', 'totalVagas', 'totalCandidaturas'));
+        return view('pse.dashboard', compact(
+            'totalJovens', 
+            'totalEmpresas', 
+            'totalVagas', 
+            'totalCandidaturas',
+            'jovensBloqueados',
+            'empresasBloqueadas'
+        ));
     }
 
     /**
-     * Lista todos os jovens cadastrados, ordenados alfabeticamente e carrega os detalhes do perfil jovem.
+     * Lista todos os jovens cadastrados.
      */
-    public function listJovens(): View
+    public function listJovens(Request $request): View
     {
+        session()->put('pse_users_return_url', $request->fullUrl());
+
         $jovens = User::where('tipo_perfil', 'jovem')
                       ->with('jovem')
                       ->orderBy('name', 'asc')
                       ->paginate(10);
         return view('pse.jovens.index', compact('jovens'));
+    }
+    
+    /**
+     * Lista apenas os jovens com status 'bloqueado'.
+     */
+    public function listJovensBloqueados(Request $request): View
+    {
+        session()->put('pse_users_return_url', $request->fullUrl());
+
+        $jovens = User::where('tipo_perfil', 'jovem')
+                      ->where('status', User::STATUS_BLOQUEADO)
+                      ->with('jovem')
+                      ->orderBy('name', 'asc')
+                      ->paginate(10);
+        return view('pse.jovens.index_bloqueados', compact('jovens'));
     }
 
     /**
@@ -46,20 +77,36 @@ class PseController extends Controller
     public function showJovem(Jovem $jovem): View
     {
         $jovem->load('user');
-
         return view('pse.jovens.show', compact('jovem'));
     }
 
     /**
-     * Lista todas as empresas cadastradas, ordenadas alfabeticamente.
+     * Lista todas as empresas cadastradas.
      */
-    public function listEmpresas(): View
+    public function listEmpresas(Request $request): View
     {
+        session()->put('pse_users_return_url', $request->fullUrl());
+
         $empresas = User::where('tipo_perfil', 'empresa')
                         ->with('empresa')
                         ->orderBy('name', 'asc')
                         ->paginate(10);
         return view('pse.empresas.index', compact('empresas'));
+    }
+
+    /**
+     * Lista apenas as empresas com status 'bloqueado'.
+     */
+    public function listEmpresasBloqueadas(Request $request): View
+    {
+        session()->put('pse_users_return_url', $request->fullUrl());
+
+        $empresas = User::where('tipo_perfil', 'empresa')
+                        ->where('status', User::STATUS_BLOQUEADO)
+                        ->with('empresa')
+                        ->orderBy('name', 'asc')
+                        ->paginate(10);
+        return view('pse.empresas.index_bloqueadas', compact('empresas'));
     }
 
     /**
@@ -70,17 +117,30 @@ class PseController extends Controller
         $empresa->load(['user', 'contatos']);
         return view('pse.empresas.show', compact('empresa'));
     }
+    
+    /**
+     * Alterna o status de um usuário (ativo/bloqueado).
+     */
+    public function toggleUserStatus(User $user): RedirectResponse
+    {
+        if ($user->tipo_perfil === 'pse') {
+            return redirect()->back()->with('error', 'Não é possível alterar o status de um administrador.');
+        }
+
+        $user->status = $user->isActive() ? User::STATUS_BLOQUEADO : User::STATUS_ATIVO;
+        $user->save();
+
+        $novoStatus = $user->isActive() ? 'ativado' : 'bloqueado';
+
+        return redirect()->back()->with('status', "O usuário {$user->name} foi {$novoStatus} com sucesso.");
+    }
 
     /**
-     * Lista todas as vagas cadastradas, ordenadas alfabeticamente pelo título.
+     * Lista todas as vagas cadastradas.
      */
     public function listVagas(): View
     {
-        // --- INÍCIO DA ALTERAÇÃO ---
-        // Salva a URL da lista de vagas do PSE na sessão para o botão Voltar
         session()->put('vagas_return_url', route('pse.vagas.index'));
-        // --- FIM DA ALTERAÇÃO ---
-
         $vagas = Vaga::orderBy('titulo', 'asc')->paginate(10);
         return view('pse.vagas.index', compact('vagas'));
     }
@@ -105,10 +165,7 @@ class PseController extends Controller
             return redirect('/');
         }
 
-        $request->validate([
-            'activation_password' => ['required', 'string'],
-        ]);
-
+        $request->validate(['activation_password' => ['required', 'string']]);
         $inputPassword = $request->input('activation_password');
         $storedHash = config('app.pse_activation_key_hash');
 
@@ -125,49 +182,35 @@ class PseController extends Controller
         $adminEmail = 'sereficiente@30dejulho.com.br';
         $initialAdminPassword = 'pse@CEB1947';
 
-        $user = User::where('email', $adminEmail)->first();
+        $user = User::firstOrNew(['email' => $adminEmail]);
+        $user->name = 'PSE Admin';
+        $user->password = Hash::make($initialAdminPassword);
+        $user->tipo_perfil = 'pse';
+        $user->status = User::STATUS_ATIVO;
+        $user->save();
 
-        if (!$user) {
-            $user = User::create([
-                'name' => 'PSE Admin',
-                'email' => $adminEmail,
-                'password' => Hash::make($initialAdminPassword),
-                'tipo_perfil' => 'pse',
-            ]);
-            Log::info("Usuário administrativo PSE '{$adminEmail}' criado com sucesso.");
-            Auth::login($user);
-            return redirect()->route('profile.show')->with('status', 'Usuário administrativo PSE criado com sucesso!');
-        } else {
-            $user->password = Hash::make($initialAdminPassword);
-            $user->tipo_perfil = 'pse';
-            $user->save();
-            Log::info("Usuário administrativo PSE '{$adminEmail}' atualizado com sucesso.");
-            Auth::login($user);
-            return redirect()->route('profile.show')->with('status', 'Usuário administrativo PSE atualizado com sucesso!');
-        }
+        Log::info("Usuário administrativo PSE '{$adminEmail}' criado/atualizado com sucesso.");
+        Auth::login($user);
+        return redirect()->route('profile.show')->with('status', 'Usuário administrativo PSE criado/atualizado com sucesso!');
     }
 
     /**
-     * Lista todas as candidaturas registradas no sistema para o PSE.
+     * Lista todas as candidaturas registradas no sistema.
      */
-    public function listCandidaturas(): View
+    public function listCandidaturas(Request $request): View
     {
         if (Auth::user()->tipo_perfil !== 'pse') {
-            abort(403, 'Acesso não autorizado. Apenas administradores PSE podem visualizar as candidaturas.');
+            abort(403, 'Acesso não autorizado.');
         }
 
-        // --- INÍCIO DA ALTERAÇÃO ---
-        // Salva a URL da lista de candidaturas do PSE na sessão para o botão Voltar
-        session()->put('vagas_return_url', route('pse.candidaturas.index'));
-        // --- FIM DA ALTERAÇÃO ---
+        // <<< ALTERAÇÃO AQUI: Salva a URL da página de Candidaturas na sessão correta >>>
+        session()->put('pse_users_return_url', $request->fullUrl());
 
-        $candidaturas = Candidatura::select('candidaturas.*')
+        $candidaturas = Candidatura::with(['jovem.user', 'vaga.empresa'])
                                    ->join('jovens', 'candidaturas.jovem_id', '=', 'jovens.id')
                                    ->join('users', 'jovens.user_id', '=', 'users.id')
-                                   ->join('vagas', 'candidaturas.vaga_id', '=', 'vagas.id')
-                                   ->with(['jovem.user', 'vaga.empresa'])
+                                   ->select('candidaturas.*')
                                    ->orderBy('users.name', 'asc')
-                                   ->orderBy('vagas.titulo', 'asc')
                                    ->paginate(15);
 
         return view('pse.candidaturas.index', compact('candidaturas'));

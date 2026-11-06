@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Vaga;
 use App\Models\Candidatura;
 use App\Models\Jovem;
+use App\Models\User; // Importar o modelo User
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
@@ -120,7 +121,16 @@ class VagaController extends Controller
         if (Auth::user()->tipo_perfil !== 'jovem') {
             abort(403, 'Acesso não autorizado. Apenas jovens podem consultar vagas.');
         }
-        $vagas = Vaga::where('status', 'ativa')->orderBy('titulo', 'asc')->paginate(10);
+
+        // <<< ALTERAÇÃO AQUI: Filtra vagas de empresas ativas >>>
+        $vagas = Vaga::where('status', 'ativa')
+                     ->whereHas('empresa', function ($query) {
+                         $query->whereHas('user', function ($userQuery) {
+                             $userQuery->where('status', User::STATUS_ATIVO);
+                         });
+                     })
+                     ->orderBy('titulo', 'asc')
+                     ->paginate(10);
 
         session()->put('vagas_return_url', $request->fullUrl());
 
@@ -145,6 +155,11 @@ class VagaController extends Controller
             return redirect()->back()->with('warning', 'Você já se candidatou a esta vaga.');
         }
 
+        // <<< ADIÇÃO AQUI: Verifica se a empresa está ativa antes de permitir a candidatura >>>
+        if ($vaga->empresa->user->isBlocked()) {
+            return redirect()->back()->with('error', 'Não é possível candidatar-se a esta vaga no momento. A empresa está aguardando aprovação ou foi bloqueada.');
+        }
+
         Candidatura::create([
             'jovem_id' => $jovem->id,
             'vaga_id' => $vaga->id,
@@ -163,9 +178,11 @@ class VagaController extends Controller
             abort(403, 'Acesso não autorizado. Você não tem permissão para visualizar os candidatos desta vaga.');
         }
 
+        // <<< ALTERAÇÃO AQUI: Filtra candidaturas de jovens ativos >>>
         $candidaturas = $vaga->candidaturas()
                              ->join('jovens', 'candidaturas.jovem_id', '=', 'jovens.id')
-                             ->join('users', 'jovens.user_id', '=', 'users.id')
+                             ->join('users', 'jovens.user_id', '=', 'users.id') // Join com a tabela users do jovem
+                             ->where('users.status', User::STATUS_ATIVO)       // Filtra por status ativo
                              ->select('candidaturas.*')
                              ->with(['jovem.user'])
                              ->orderBy('users.name', 'asc')
@@ -183,6 +200,14 @@ class VagaController extends Controller
             abort(403, 'Acesso não autorizado. Você não tem permissão para visualizar este perfil.');
         }
 
+        // <<< ALTERAÇÃO AQUI: Verifica o status do jovem antes de exibir o perfil >>>
+        // Carrega o usuário associado ao jovem para verificar o status
+        $jovem->load('user');
+        if ($jovem->user->isBlocked()) {
+            abort(403, 'Acesso não autorizado. O perfil deste jovem está bloqueado e não pode ser visualizado.');
+        }
+        // <<< FIM DA ALTERAÇÃO >>>
+
         $candidatura = Candidatura::where('jovem_id', $jovem->id)
                                   ->where('vaga_id', $vaga->id)
                                   ->first();
@@ -197,8 +222,6 @@ class VagaController extends Controller
             // Opcional: Adicionar uma mensagem de status para a empresa (pode ser útil para feedback imediato)
             session()->flash('status', 'O status da candidatura foi atualizado para "Visualizado".');
         }
-
-        $jovem->load('user');
 
         return view('vagas.candidatos.jovem.show', compact('vaga', 'jovem'));
     }
@@ -268,6 +291,14 @@ class VagaController extends Controller
             abort(403, 'Acesso não autorizado. Você não tem permissão para visualizar este currículo.');
         }
 
+        // <<< ALTERAÇÃO AQUI: Verifica o status do jovem antes de permitir a visualização do currículo PDF >>>
+        // Carrega o usuário associado ao jovem para verificar o status
+        $jovem->load('user');
+        if ($jovem->user->isBlocked()) {
+            return redirect()->back()->with('error', 'O currículo deste jovem está bloqueado e não pode ser visualizado no momento.');
+        }
+        // <<< FIM DA ALTERAÇÃO >>>
+
         $candidatura = Candidatura::where('jovem_id', $jovem->id)
                                   ->where('vaga_id', $vaga->id)
                                   ->first();
@@ -282,7 +313,6 @@ class VagaController extends Controller
             session()->flash('status', 'O status da candidatura foi atualizado para "Visualizado" após a visualização do currículo.');
         }
 
-        // <<< ALTERAÇÃO AQUI: Especifica o disco 'public' para Storage::exists() e Storage::response() >>>
         if (!$jovem->curriculo_path || !Storage::disk('public')->exists($jovem->curriculo_path)) {
             return redirect()->back()->with('error', 'Currículo PDF não encontrado.');
         }

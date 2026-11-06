@@ -1,10 +1,40 @@
 <x-app-layout>
     <div class="container py-4">
-        <a href="{{ route('pse.empresas.index') }}" class="btn btn-secondary mb-3">
-            <i class="bi bi-arrow-left me-2"></i>Voltar para Lista de Empresas
+        <a href="{{ session('pse_users_return_url', route('pse.empresas.index')) }}" class="btn btn-secondary mb-3">
+            <i class="bi bi-arrow-left me-2"></i>Voltar para a Lista
         </a>
 
-        <h1 class="h2 mb-4">Detalhes da Empresa: {{ $empresa->nome_fantasia ?? $empresa->user->name }}</h1>
+        {{-- Alerta de sucesso para feedback da ação --}}
+        @if(session('status'))
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                {{ session('status') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+
+        {{-- <<< ALTERAÇÃO: CABEÇALHO COM STATUS E SWITCH >>> --}}
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+            <h1 class="h2 mb-0">Detalhes da Empresa: {{ $empresa->nome_fantasia ?? $empresa->user->name }}</h1>
+            <div class="d-flex align-items-center gap-3">
+                @if ($empresa->user->isActive())
+                    <span class="badge bg-success fs-6">Status: Ativa</span>
+                @else
+                    <span class="badge bg-danger fs-6">Status: Bloqueada</span>
+                @endif
+                <form action="{{ route('pse.users.toggle-status', $empresa->user->id) }}" method="POST">
+                    @csrf
+                    @if ($empresa->user->isActive())
+                        <button type="submit" class="btn btn-sm btn-warning" title="Bloquear acesso da empresa">
+                            <i class="bi bi-lock-fill me-1"></i>Bloquear
+                        </button>
+                    @else
+                        <button type="submit" class="btn btn-sm btn-success" title="Ativar acesso da empresa">
+                            <i class="bi bi-unlock-fill me-1"></i>Ativar
+                        </button>
+                    @endif
+                </form>
+            </div>
+        </div>
         <hr class="my-4">
 
         <div class="card shadow-sm p-4 mb-3">

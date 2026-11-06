@@ -48,38 +48,13 @@ Route::post('/reset-password', [CustomPasswordResetController::class, 'reset'])
 
 // Grupo de rotas que exigem autenticação E E-MAIL VERIFICADO
 Route::middleware(['auth', 'verified'])->group(function () {
-    // Rotas de Perfil
+    // --- ROTAS COM ACESSO PERMITIDO PARA USUÁRIOS BLOQUEADOS ---
+    // Perfil (visualizar, editar, deletar)
     Route::get('/perfil', [ProfileController::class, 'show'])->name('profile.show');
     Route::get('/perfil/editar', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/perfil', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/perfil', [ProfileController::class, 'destroy'])->name('profile.destroy');
-
-    // ROTA DE LOGOUT (GET)
-    Route::get('/logout-temp', function (Request $request) {
-        Auth::guard('web')->logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-        return redirect('/');
-    })->name('logout.temp');
-
-    // --- Rotas de Vagas ---
-    Route::resource('vagas', VagaController::class)->except(['show']);
-    Route::get('/vagas/{vaga}/candidatos', [VagaController::class, 'showCandidatos'])->name('vagas.candidatos.index');
-    Route::get('/vagas/{vaga}/candidatos/{jovem}/perfil', [VagaController::class, 'showJovemProfile'])->name('vagas.candidatos.jovem.show');
-    // <<< NOVA ROTA ADICIONADA AQUI >>>
-    Route::get('/vagas/{vaga}/candidatos/{jovem}/curriculo-pdf', [VagaController::class, 'viewJovemCurriculoPdf'])->name('vagas.candidatos.jovem.viewCurriculoPdf');
-    Route::post('/vagas/{vaga}/candidatos/{candidatura}/status', [VagaController::class, 'updateCandidaturaStatus'])->name('vagas.candidatos.updateStatus');
-
-    // Consulta de Vagas (Jovem)
-    Route::get('/vagas/buscar', [VagaController::class, 'search'])->name('vagas.search');
-    Route::get('/vagas/{vaga}', [VagaController::class, 'show'])->name('vagas.show');
-    Route::post('/vagas/{vaga}/candidatar', [VagaController::class, 'apply'])->name('vagas.apply');
-    Route::delete('/vagas/{vaga}/cancelar-candidatura', [VagaController::class, 'cancelApplication'])->name('vagas.cancelApplication');
-
-    // --- ROTA PARA MINHAS CANDIDATURAS (JOVEM) ---
-    Route::get('/jovem/minhas-candidaturas', [JovemController::class, 'showMyCandidaturas'])->name('jovem.candidaturas');
-
-    // --- ROTAS DO ASSISTENTE DE PERFIL DO JOVEM (Cadastro/Atualização de Currículo) ---
+    // Assistente de currículo do Jovem
     Route::middleware(['is.jovem'])->prefix('jovem/meu-curriculo')->name('jovem.curriculo.')->group(function () {
         Route::get('/etapa-1', [JovemProfileController::class, 'showStep1Form'])->name('step1');
         Route::post('/etapa-1', [JovemProfileController::class, 'processStep1'])->name('step1.process');
@@ -89,16 +64,47 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/etapa-3', [JovemProfileController::class, 'processStep3'])->name('step3.process');
         Route::get('/etapa-4', [JovemProfileController::class, 'showStep4Form'])->name('step4');
         Route::post('/etapa-4', [JovemProfileController::class, 'processStep4'])->name('step4.process');
+        Route::get('/', function() { return redirect()->route('jovem.curriculo.step1'); })->name('index');
+    });
+    // Gerenciamento de vagas pela Empresa (criar, editar, excluir)
+    Route::resource('vagas', VagaController::class)->except(['show', 'index']);
+    Route::get('/vagas', [VagaController::class, 'index'])->name('vagas.index'); // Separado para não ser pego pelo 'check.status'
 
-        Route::get('/', function() {
-            return redirect()->route('jovem.curriculo.step1');
-        })->name('index');
+    // ROTA DE LOGOUT (GET)
+    Route::get('/logout-temp', function (Request $request) {
+        Auth::guard('web')->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+        return redirect('/');
+    })->name('logout.temp');
+
+    // --- ROTAS COM ACESSO RESTRITO (APENAS PARA USUÁRIOS ATIVOS) ---
+    Route::middleware(['check.status'])->group(function () {
+        // Rotas de Vagas (interação)
+        Route::get('/vagas/{vaga}/candidatos', [VagaController::class, 'showCandidatos'])->name('vagas.candidatos.index');
+        Route::get('/vagas/{vaga}/candidatos/{jovem}/perfil', [VagaController::class, 'showJovemProfile'])->name('vagas.candidatos.jovem.show');
+        Route::get('/vagas/{vaga}/candidatos/{jovem}/curriculo-pdf', [VagaController::class, 'viewJovemCurriculoPdf'])->name('vagas.candidatos.jovem.viewCurriculoPdf');
+        Route::post('/vagas/{vaga}/candidatos/{candidatura}/status', [VagaController::class, 'updateCandidaturaStatus'])->name('vagas.candidatos.updateStatus');
+
+        // Consulta de Vagas (Jovem)
+        Route::get('/vagas/buscar', [VagaController::class, 'search'])->name('vagas.search');
+        Route::get('/vagas/{vaga}', [VagaController::class, 'show'])->name('vagas.show');
+        Route::post('/vagas/{vaga}/candidatar', [VagaController::class, 'apply'])->name('vagas.apply');
+        Route::delete('/vagas/{vaga}/cancelar-candidatura', [VagaController::class, 'cancelApplication'])->name('vagas.cancelApplication');
+
+        // --- ROTA PARA MINHAS CANDIDATURAS (JOVEM) ---
+        Route::get('/jovem/minhas-candidaturas', [JovemController::class, 'showMyCandidaturas'])->name('jovem.candidaturas');
     });
 
     // --- Rotas Administrativas do PSE ---
     Route::prefix('admin/pse')->name('pse.')->middleware(CheckPseProfile::class)->group(function () {
         Route::get('/', [PseController::class, 'dashboard'])->name('dashboard');
         Route::get('/jovens', [PseController::class, 'listJovens'])->name('jovens.index');
+        // <<< NOVAS ROTAS ADICIONADAS AQUI >>>
+        Route::get('/jovens/bloqueados', [PseController::class, 'listJovensBloqueados'])->name('jovens.bloqueados');
+        Route::get('/empresas/bloqueadas', [PseController::class, 'listEmpresasBloqueadas'])->name('empresas.bloqueadas');
+        Route::post('/users/{user}/toggle-status', [PseController::class, 'toggleUserStatus'])->name('users.toggle-status');
+        // FIM DAS NOVAS ROTAS
         Route::get('/jovens/{jovem}', [PseController::class, 'showJovem'])->name('jovens.show');
         Route::get('/empresas', [PseController::class, 'listEmpresas'])->name('empresas.index');
         Route::get('/empresas/{empresa}', [PseController::class, 'showEmpresa'])->name('empresas.show');

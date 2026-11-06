@@ -1,24 +1,40 @@
 <x-app-layout>
     <div class="container py-4">
-        @php
-            // Obtém a rota de retorno do parâmetro de consulta, ou um padrão se não for fornecida
-            $returnRouteName = request()->query('return_to_route', 'pse.jovens.index');
-
-            // Define o texto do botão com base na rota de retorno
-            $buttonText = 'Voltar';
-            if ($returnRouteName === 'pse.candidaturas.index') {
-                $buttonText = 'Voltar para Candidaturas';
-            } elseif ($returnRouteName === 'pse.jovens.index') {
-                $buttonText = 'Voltar para Lista de Jovens';
-            }
-            // Constrói a URL de retorno
-            $returnUrl = route($returnRouteName);
-        @endphp
-        <a href="{{ $returnUrl }}" class="btn btn-secondary mb-3">
-            <i class="bi bi-arrow-left me-2"></i>{{ $buttonText }}
+        <a href="{{ session('pse_users_return_url', route('pse.jovens.index')) }}" class="btn btn-secondary mb-3">
+            <i class="bi bi-arrow-left me-2"></i>Voltar para a Lista
         </a>
 
-        <h1 class="h2 mb-4">Perfil do Jovem: {{ $jovem->user->name }} (PSE)</h1>
+        {{-- Alerta de sucesso para feedback da ação --}}
+        @if(session('status'))
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                {{ session('status') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+
+        {{-- <<< ALTERAÇÃO: CABEÇALHO COM STATUS E SWITCH >>> --}}
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+            <h1 class="h2 mb-0">Perfil do Jovem: {{ $jovem->user->name }}</h1>
+            <div class="d-flex align-items-center gap-3">
+                @if ($jovem->user->isActive())
+                    <span class="badge bg-success fs-6">Status: Ativo</span>
+                @else
+                    <span class="badge bg-danger fs-6">Status: Bloqueado</span>
+                @endif
+                <form action="{{ route('pse.users.toggle-status', $jovem->user->id) }}" method="POST">
+                    @csrf
+                    @if ($jovem->user->isActive())
+                        <button type="submit" class="btn btn-sm btn-warning" title="Bloquear acesso do usuário">
+                            <i class="bi bi-lock-fill me-1"></i>Bloquear
+                        </button>
+                    @else
+                        <button type="submit" class="btn btn-sm btn-success" title="Ativar acesso do usuário">
+                            <i class="bi bi-unlock-fill me-1"></i>Ativar
+                        </button>
+                    @endif
+                </form>
+            </div>
+        </div>
         <hr class="my-4">
 
         <div class="card shadow-sm p-4 mb-3">

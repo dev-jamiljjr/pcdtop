@@ -14,6 +14,12 @@ class User extends Authenticatable implements MustVerifyEmail
     use HasFactory, Notifiable;
 
     /**
+     * Constantes para os status do usuário.
+     */
+    public const STATUS_ATIVO = 'ativo';
+    public const STATUS_BLOQUEADO = 'bloqueado';
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var array<int, string>
@@ -22,7 +28,8 @@ class User extends Authenticatable implements MustVerifyEmail
         'name',
         'email',
         'password',
-        'tipo_perfil', // Corrigido para 'tipo_perfil' conforme usado no controlador
+        'tipo_perfil',
+        'status', // Adicionado para permitir atribuição em massa
     ];
 
     /**
@@ -69,5 +76,25 @@ class User extends Authenticatable implements MustVerifyEmail
     public function empresa(): HasOne
     {
         return $this->hasOne(Empresa::class);
+    }
+
+    /**
+     * Verifica se o usuário está ativo.
+     *
+     * @return bool
+     */
+    public function isActive(): bool
+    {
+        return $this->status === self::STATUS_ATIVO;
+    }
+
+    /**
+     * Verifica se o usuário está bloqueado.
+     *
+     * @return bool
+     */
+    public function isBlocked(): bool
+    {
+        return $this->status === self::STATUS_BLOQUEADO;
     }
 }

@@ -1,5 +1,13 @@
 <x-app-layout>
     <div class="container py-4">
+        {{-- ADICIONA O ALERTA DE STATUS BLOQUEADO --}}
+        @if(Auth::user()->isBlocked())
+            <div class="alert alert-warning text-center" role="alert">
+                <h4 class="alert-heading">Cadastro realizado!</h4>
+                <p class="mb-0">Aguardando aprovação...</p>
+            </div>
+        @endif
+
         <h1 class="h2 mb-4">Editar Perfil</h1>
         <hr class="my-4">
 

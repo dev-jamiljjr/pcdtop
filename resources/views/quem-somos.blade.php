@@ -53,6 +53,9 @@
                 <p class="text-justify">O verdadeiro propósito do PCD Top, é fazer com que essas conexões produzam resultados reais: mais visibilidade, mais oportunidades, mais autonomia e uma inclusão profissional acompanhada e sustentável.</p>
                 <p class="text-justify">Porque, quando existe oportunidade, acessibilidade, orientação e respeito ao tempo de cada pessoa, aquilo que muitas vezes é visto apenas como limitação pode dar lugar à descoberta de talentos, capacidades e novas possibilidades.</p>
 
+                {{-- NOVO PARÁGRAFO ADICIONADO AQUI --}}
+                <p class="text-justify mt-4">Inicialmente, a plataforma PCD Top será direcionada ao atendimento das demandas do Programa Ser Eficiente (PSE), cuja atuação abrange atualmente a região da Baixada Santista. Nesta primeira etapa, o acesso será destinado aos jovens atendidos pelo programa e às empresas parceiras, estabelecendo um ambiente de conexão, orientação e desenvolvimento de oportunidades profissionais.</p>
+
                 <footer class="text-muted text-center mt-5 border-top pt-3">
                     <small>©2026 - Jamil José Junior</small>
                 </footer>
