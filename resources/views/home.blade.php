@@ -53,7 +53,7 @@
         {{-- NOVA SEÇÃO INFORMATIVA SOBRE O PSE --}}
         <hr class="my-5">
         <div class="row justify-content-center">
-            <div class="col-lg-10">
+            <div class="col-lg-11">
                 {{-- Imagem de cabeçalho do PSE --}}
                 <div class="text-center mb-4">
                     <img src="{{ asset('images/pse_cabecalho.png') }}" class="img-fluid" alt="Cabeçalho do Programa Ser Eficiente">
@@ -113,17 +113,56 @@
         {{-- NOVA SEÇÃO: CONHEÇA O CENTRO ESPÍRITA BENEFICENTE "30 DE JULHO" --}}
         <hr class="my-5">
         <div class="row justify-content-center">
-            <div class="col-lg-10">
+            <div class="col-lg-11">
+                {{-- <<< INÍCIO DA ALTERAÇÃO >>> --}}
+                <div class="text-center mb-4">
+                    <img src="{{ asset('images/ceb_foto_sede.jpg') }}" class="img-fluid rounded shadow-sm" alt="Sede do Centro Espírita Beneficente 30 de Julho">
+                </div>
+                {{-- <<< FIM DA ALTERAÇÃO: Removido o style="max-width: 1060px;" --}}
+
                 <h2 class="text-center h3 fw-bold mb-4" style="color: var(--pcdtop-blue);">Conheça o Centro Espírita Beneficente "30 de Julho"</h2>
                 <p class="text-justify">Fundado em 30 de Julho de 1947, o Centro Espírita Beneficente "30 de Julho" (CEB 30 de Julho), é uma instituição filantrópica, que ao longo dos anos cresceu e evoluiu, investindo no capital humano, adequando-se a novos conceitos e tecnologias, solidificando-se no objetivo da busca em defesas e garantias do direito na sociedade para crianças, jovens e adultos PCD (Pessoa com Deficiência) intelectual e/ou déficit de aprendizagem, direcionando gratuitamente nossas ações nas áreas da educação e assistência social, através de 02 serviços: a Escola de Educação Especial "30 de Julho" e o Programa Ser Eficiente. Também dá apoio sócio familiar direcionado à família dos atendidos com base na Política Nacional de Assistência Social.</p>
 
+                {{-- NOVO TÍTULO E CONTEÚDO: Endereço/Contato --}}
+                <h4 class="h5 mt-4 mb-3" style="color: var(--pcdtop-dark-blue);">Endereço/Contato:</h4>
+                <div class="text-justify mb-4" style="color: var(--pcdtop-blue);">
+                    <p class="mb-1">Av. Senador Feijó nº 513 no bairro Vila Mathias em Santos/SP – CEP 11015505.</p>
+                    <p class="mb-1">Tel.: (13) 3797-2500 / 3797-2501</p>
+                    <p class="mb-0">e-mail: jornalismo@30dejulho.com.br</p>
+                </div>
+
+                {{-- SEÇÃO DE LINKS DA INSTITUIÇÃO COM IMAGENS --}}
                 <h4 class="h5 mt-4 mb-3" style="color: var(--pcdtop-dark-blue);">Links da Instituição:</h4>
-                <ul class="list-unstyled ps-3">
-                    <li class="mb-2"><i class="bi bi-globe me-2" style="font-size: 0.9rem; vertical-align: middle; color: var(--pcdtop-blue);"></i><strong>Site:</strong> <a href="http://30dejulho.com.br" target="_blank" class="text-primary">30dejulho.com.br</a></li>
-                    <li class="mb-2"><i class="bi bi-facebook me-2" style="font-size: 0.9rem; vertical-align: middle; color: var(--pcdtop-blue);"></i><strong>Facebook:</strong> <a href="https://facebook.com/30dejulho" target="_blank" class="text-primary">facebook.com/30dejulho</a></li>
-                    <li class="mb-2"><i class="bi bi-instagram me-2" style="font-size: 0.9rem; vertical-align: middle; color: var(--pcdtop-blue);"></i><strong>Instagram:</strong> <a href="https://instagram.com/ceb30dejulho" target="_blank" class="text-primary">instagram.com/ceb30dejulho</a></li>
-                    <li class="mb-2"><i class="bi bi-youtube me-2" style="font-size: 0.9rem; vertical-align: middle; color: var(--pcdtop-blue);"></i><strong>Youtube:</strong> <a href="https://youtube.com/ceb30dejulho" target="_blank" class="text-primary">youtube.com/ceb30dejulho</a></li>
-                </ul>
+                <div class="row align-items-center">
+                    {{-- Imagem CEB Logo à esquerda --}}
+                    <div class="col-md-3 text-center mb-3 mb-md-0">
+                        <img src="{{ asset('images/ceb_logo.png') }}" class="img-fluid" alt="Logo CEB 30 de Julho" style="max-width: 200px;">
+                    </div>
+                    
+                    {{-- Lista de Links no Centro --}}
+                    <div class="col-md-5 mb-3 mb-md-0">
+                        <ul class="list-unstyled ps-3">
+                            <li class="mb-2"><i class="bi bi-globe me-2" style="font-size: 0.9rem; vertical-align: middle; color: var(--pcdtop-blue);"></i><strong>Site:</strong> <a href="http://30dejulho.com.br" target="_blank" class="text-primary">30dejulho.com.br</a></li>
+                            <li class="mb-2"><i class="bi bi-facebook me-2" style="font-size: 0.9rem; vertical-align: middle; color: var(--pcdtop-blue);"></i><strong>Facebook:</strong> <a href="https://facebook.com/30dejulho" target="_blank" class="text-primary">facebook.com/30dejulho</a></li>
+                            <li class="mb-2"><i class="bi bi-instagram me-2" style="font-size: 0.9rem; vertical-align: middle; color: var(--pcdtop-blue);"></i><strong>Instagram:</strong> <a href="https://instagram.com/ceb30dejulho" target="_blank" class="text-primary">instagram.com/ceb30dejulho</a></li>
+                            <li class="mb-2"><i class="bi bi-youtube me-2" style="font-size: 0.9rem; vertical-align: middle; color: var(--pcdtop-blue);"></i><strong>Youtube:</strong> <a href="https://youtube.com/ceb30dejulho" target="_blank" class="text-primary">youtube.com/ceb30dejulho</a></li>
+                        </ul>
+                    </div>
+
+                    {{-- Imagens de Doação à direita --}}
+                    <div class="col-md-4 d-flex flex-column align-items-center justify-content-center">
+                        <div class="text-center mb-3">
+                            <a href="https://www.nfp.fazenda.sp.gov.br/login.aspx?ReturnUrl=%2f" target="_blank">
+                                <img src="{{ asset('images/ceb_nf_paulista.png') }}" class="img-fluid mb-2" alt="Nota Fiscal Paulista" style="max-width: 100px;">
+                            </a>
+                            <p class="small text-muted mb-0"><b>Nota Fiscal Paulista<br>(Doação Automática)</b></p>
+                        </div>
+                        <div class="text-center">
+                            <img src="{{ asset('images/ceb_qrcod_pix.png') }}" class="img-fluid mb-2" alt="QR Code PIX" style="max-width: 100px;">
+                            <p class="small text-muted mb-0"><b>Doação - Chave PIX (CNPJ):<br>58.198.128/0001-91</b></p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 

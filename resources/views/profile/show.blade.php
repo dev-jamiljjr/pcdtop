@@ -1,7 +1,7 @@
 <x-app-layout>
     <div class="container py-4">
 
-        {{-- Mensagens de status e boas-vindas (sem alteração) --}}
+        {{-- Mensagens de status e boas-vindas --}}
         @if (session('status_registro'))
             <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
                 <h4 class="alert-heading">Seja bem-vindo(a) ao PCD TOP! 💙</h4>
@@ -9,17 +9,17 @@
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         @endif
-        @if (session('status'))
+        @if (session('status') && session('status') !== 'profile-deleted')
             <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
                 {{ session('status') }}
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         @endif
 
-        {{-- Alerta de status bloqueado (sem alteração) --}}
+        {{-- <<< ALTERAÇÃO AQUI: Texto para Acesso restrito >>> --}}
         @if(Auth::user()->isBlocked() && Auth::user()->tipo_perfil !== 'pse')
             <div class="alert alert-warning text-center mb-4" role="alert">
-                <h4 class="alert-heading">Cadastro realizado!</h4>
+                <h4 class="alert-heading">Acesso restrito!</h4>
                 <p class="mb-0">Aguardando aprovação...</p>
             </div>
         @endif
@@ -31,8 +31,7 @@
         <p>Tipo de perfil: <strong class="text-primary">{{ Auth::user()->tipo_perfil }}</strong>.</p>
         <hr class="my-4">
 
-        {{-- <<< INÍCIO DA CORREÇÃO: Preenchimento dos detalhes do perfil >>> --}}
-
+        {{-- Detalhes do Perfil Jovem --}}
         @if (Auth::user()->tipo_perfil === 'jovem' && Auth::user()->jovem)
             @php $jovem = Auth::user()->jovem; @endphp
             <h2 class="h4 mb-3">Detalhes do Perfil</h2>
@@ -72,6 +71,7 @@
                 </div>
             </div>
 
+        {{-- Detalhes do Perfil Empresa --}}
         @elseif (Auth::user()->tipo_perfil === 'empresa' && Auth::user()->empresa)
             @php $empresa = Auth::user()->empresa; @endphp
             <h2 class="h4 mb-3">Detalhes do Perfil</h2>
@@ -144,8 +144,7 @@
             <div class="alert alert-info">Esta é uma conta administrativa. Use o painel para gerenciar o sistema.</div>
         @endif
 
-        {{-- <<< FIM DA CORREÇÃO >>> --}}
-
+        {{-- Botões de Ação --}}
         <div class="mt-4 d-flex gap-2">
             @if (Auth::user()->tipo_perfil === 'jovem')
                 <a href="{{ route('jovem.curriculo.step1') }}" class="btn btn-primary" style="background-color: var(--pcdtop-dark-blue); border-color: var(--pcdtop-dark-blue);">
@@ -165,10 +164,10 @@
         </div>
     </div>
 
-    {{-- Modal de confirmação de exclusão (sem alteração) --}}
+    {{-- Modal de confirmação de exclusão --}}
     @if(in_array(Auth::user()->tipo_perfil, ['jovem', 'empresa']))
     <div class="modal fade" id="confirmUserDeletionModal" tabindex="-1" aria-labelledby="confirmUserDeletionModalLabel" aria-hidden="true">
-        {{-- ... (código do modal) ... --}}
+        {{-- Mantenha seu código do modal aqui --}}
     </div>
     @endif
 </x-app-layout>

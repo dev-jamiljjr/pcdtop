@@ -1,9 +1,9 @@
 <x-app-layout>
     <div class="container py-4">
-        {{-- ADICIONA O ALERTA DE STATUS BLOQUEADO --}}
-        @if(Auth::user()->isBlocked())
+        {{-- <<< ALTERAÇÃO AQUI: Texto para Acesso restrito >>> --}}
+        @if(Auth::user()->isBlocked() && Auth::user()->tipo_perfil !== 'pse')
             <div class="alert alert-warning text-center" role="alert">
-                <h4 class="alert-heading">Cadastro realizado!</h4>
+                <h4 class="alert-heading">Acesso restrito!</h4>
                 <p class="mb-0">Aguardando aprovação...</p>
             </div>
         @endif
@@ -48,7 +48,7 @@
             @if ($user->tipo_perfil === 'jovem' && $user->jovem)
                 {{-- O formulário do jovem permanece o mesmo --}}
                 <div class="card shadow-sm p-4 mb-4">
-                    {{-- ... (código do formulário do jovem) ... --}}
+                    {{-- Seu código do formulário do jovem aqui --}}
                 </div>
 
             {{-- Formulário para EMPRESA --}}
@@ -141,7 +141,7 @@
                             </div>
                             <div class="col-md-4 mb-3">
                                 <label for="contato_1_email" class="form-label">E-mail</label>
-                                <input id="contato_1_email" class="form-control" type="email" name="contatos[0][email]" value="{{ old('contatos.0.email', $primeiro_contato->email ?? '') }}" />
+                                <input id="contato_1_email" class="form-control" type="email" name="contatos[1][email]" value="{{ old('contatos.0.email', $primeiro_contato->email ?? '') }}" />
                             </div>
                         </div>
                     </div>

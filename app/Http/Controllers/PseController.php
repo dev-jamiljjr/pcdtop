@@ -203,8 +203,10 @@ class PseController extends Controller
             abort(403, 'Acesso não autorizado.');
         }
 
-        // <<< ALTERAÇÃO AQUI: Salva a URL da página de Candidaturas na sessão correta >>>
+        // Armazena a URL da página de Candidaturas na sessão correta para o botão "Voltar" de vagas
+        // E também para o retorno de perfis de usuário (jovem/empresa) se for o caso.
         session()->put('pse_users_return_url', $request->fullUrl());
+        session()->put('vagas_return_url', $request->fullUrl()); // <<< NOVA LINHA ADICIONADA AQUI
 
         $candidaturas = Candidatura::with(['jovem.user', 'vaga.empresa'])
                                    ->join('jovens', 'candidaturas.jovem_id', '=', 'jovens.id')
