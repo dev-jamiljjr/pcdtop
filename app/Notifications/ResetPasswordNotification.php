@@ -6,7 +6,6 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
-use Illuminate\Support\Facades\Lang;
 
 class ResetPasswordNotification extends Notification
 {
@@ -48,11 +47,11 @@ class ResetPasswordNotification extends Notification
         $expiration = config('auth.passwords.'.config('auth.defaults.passwords').'.expire');
 
         return (new MailMessage)
-            ->subject(Lang::get('Redefinição de Senha'))
-            ->line(Lang::get('Você está recebendo este e-mail porque recebemos uma solicitação de redefinição de senha para sua conta.'))
-            ->action(Lang::get('Redefinir Senha'), $url)
-            ->line(Lang::get('Este link de redefinição de senha expirará em :count minutos.', ['count' => $expiration]))
-            ->line(Lang::get('Se você não solicitou uma redefinição de senha, nenhuma ação adicional é necessária.'));
+            ->subject('Redefinição de Senha')
+            ->line('Você está recebendo este e-mail porque recebemos uma solicitação de redefinição de senha para a sua conta.')
+            ->action('Redefinir Senha', $url)
+            ->line('Este link de redefinição de senha expirará em ' . $expiration . ' minutos.')
+            ->line('Se você não solicitou uma redefinição de senha, nenhuma ação adicional é necessária.');
     }
 
     /**

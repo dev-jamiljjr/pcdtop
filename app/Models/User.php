@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use App\Notifications\VerifyEmailNotification;
+use App\Notifications\ResetPasswordNotification; // <<< ADICIONADO AQUI
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class User extends Authenticatable implements MustVerifyEmail
@@ -39,6 +40,14 @@ class User extends Authenticatable implements MustVerifyEmail
         $this->notify(new VerifyEmailNotification);
     }
 
+    /**
+     * Envia a notificação de redefinição de senha customizada em português.
+     */
+    public function sendPasswordResetNotification($token): void
+    {
+        $this->notify(new ResetPasswordNotification($token));
+    }
+
     public function jovem(): HasOne
     {
         return $this->hasOne(Jovem::class);
@@ -58,6 +67,4 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->status === self::STATUS_BLOQUEADO;
     }
-
-    // O método boot() foi removido.
 }
