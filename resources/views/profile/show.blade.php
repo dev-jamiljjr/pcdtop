@@ -16,7 +16,7 @@
             </div>
         @endif
 
-        {{-- <<< ALTERAÇÃO AQUI: Texto para Acesso restrito >>> --}}
+        {{-- Alerta de status bloqueado --}}
         @if(Auth::user()->isBlocked() && Auth::user()->tipo_perfil !== 'pse')
             <div class="alert alert-warning text-center mb-4" role="alert">
                 <h4 class="alert-heading">Acesso restrito!</h4>
@@ -167,7 +167,36 @@
     {{-- Modal de confirmação de exclusão --}}
     @if(in_array(Auth::user()->tipo_perfil, ['jovem', 'empresa']))
     <div class="modal fade" id="confirmUserDeletionModal" tabindex="-1" aria-labelledby="confirmUserDeletionModalLabel" aria-hidden="true">
-        {{-- Mantenha seu código do modal aqui --}}
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmUserDeletionModalLabel">Confirmar Exclusão de Conta</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <form method="POST" action="{{ route('profile.destroy') }}">
+                    @csrf
+                    @method('DELETE')
+                    <div class="modal-body">
+                        <p>Tem certeza de que deseja excluir sua conta? Esta ação é irreversível.</p>
+                        <p class="text-danger fw-bold">Todos os seus dados e informações de perfil serão removidos permanentemente.</p>
+
+                        <div class="mb-3">
+                            <label for="password_confirm_delete" class="form-label visually-hidden">Confirme sua Senha</label>
+                            <input id="password_confirm_delete" name="password" type="password" class="form-control @error('password', 'userDeletion') is-invalid @enderror" placeholder="Confirme sua senha" required>
+                            @error('password', 'userDeletion')
+                                <div class="invalid-feedback">
+                                    {{ $message }}
+                                </div>
+                            @enderror
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-danger">Excluir Conta Permanentemente</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
     @endif
 </x-app-layout>
