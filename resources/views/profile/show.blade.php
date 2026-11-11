@@ -39,6 +39,7 @@
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <h5 class="fw-bold">Informações Pessoais</h5>
+                        <p><strong>CPF:</strong> {{ $jovem->cpf_formatado ?? 'Não informado' }}</p>
                         <p><strong>Telefone:</strong> {{ $jovem->telefone ?? 'Não informado' }}</p>
                         <p><strong>Data de Nasc.:</strong> {{ $jovem->data_nascimento ? \Carbon\Carbon::parse($jovem->data_nascimento)->format('d/m/Y') : 'Não informado' }}</p>
                         <p><strong>Gênero:</strong> {{ $jovem->genero ?? 'Não informado' }}</p>

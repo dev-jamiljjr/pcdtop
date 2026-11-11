@@ -18,6 +18,13 @@ class JovemProfileController extends Controller
     {
         $user = Auth::user();
         $jovem = $user->jovem ?? new Jovem();
+        
+        // Recupera dados temporários da sessão, se houverem, para preservar durante a navegação
+        $sessionData = session(self::SESSION_KEY . '.step1', []);
+        if (!empty($sessionData)) {
+            $jovem->fill($sessionData);
+        }
+
         return view('jovem.curriculo.step1', compact('user', 'jovem'));
     }
 
@@ -28,23 +35,38 @@ class JovemProfileController extends Controller
 
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'cpf' => ['required', 'string', 'regex:/^\d{11}$/', Rule::unique('jovens', 'cpf')->ignore($jovemId)],
+            'cpf' => [
+                'nullable',
+                'string',
+                'regex:/^\d{11}$/',
+                Rule::unique('jovens', 'cpf')->ignore($jovemId),
+            ],
             'data_nascimento' => ['required', 'date'],
             'telefone' => ['nullable', 'string', 'max:20'],
             'genero' => ['required', 'string', Rule::in(['Masculino', 'Feminino', 'Outro', 'Prefiro não dizer'])],
             'deficiencia' => ['nullable', 'string', 'max:1000'],
+        ], [
+            'cpf.unique' => 'Este CPF já está em uso por outra pessoa.',
+            'cpf.regex' => 'O CPF deve conter somente números e ter 11 dígitos.',
         ]);
+
+        $cpfSanitizado = !empty($validated['cpf']) ? (string) preg_replace('/\D/', '', $validated['cpf']) : null;
 
         $user->forceFill(['name' => $validated['name']])->save();
 
         $request->session()->put(self::SESSION_KEY . '.step1', [
             'nome_completo' => $validated['name'],
-            'cpf' => $validated['cpf'],
+            'cpf' => $cpfSanitizado,
             'data_nascimento' => $validated['data_nascimento'],
             'telefone' => $validated['telefone'],
             'genero' => $validated['genero'],
             'deficiencia' => $validated['deficiencia'],
         ]);
+
+        // Verifica se a requisição veio do botão Voltar da etapa 2 para salvar o estado sem avançar
+        if ($request->has('action') && $request->input('action') === 'back') {
+            return redirect()->route('jovem.curriculo.step2');
+        }
 
         return redirect()->route('jovem.curriculo.step2');
     }
@@ -53,6 +75,18 @@ class JovemProfileController extends Controller
     {
         $user = Auth::user();
         $jovem = $user->jovem ?? new Jovem();
+
+        // Se não houver dados na sessão, preenche com os dados salvos no banco para exibição inicial
+        $sessionData = session(self::SESSION_KEY . '.step2', [
+            'endereco' => $jovem->endereco,
+            'bairro' => $jovem->bairro,
+            'cidade' => $jovem->cidade,
+            'estado' => $jovem->estado,
+            'cep' => $jovem->cep,
+        ]);
+        
+        $jovem->fill($sessionData);
+
         return view('jovem.curriculo.step2', compact('jovem', 'user'));
     }
 
@@ -68,6 +102,10 @@ class JovemProfileController extends Controller
 
         $request->session()->put(self::SESSION_KEY . '.step2', $validated);
 
+        if ($request->has('action') && $request->input('action') === 'back') {
+            return redirect()->route('jovem.curriculo.step1');
+        }
+
         return redirect()->route('jovem.curriculo.step3');
     }
 
@@ -75,6 +113,17 @@ class JovemProfileController extends Controller
     {
         $user = Auth::user();
         $jovem = $user->jovem ?? new Jovem();
+
+        $sessionData = session(self::SESSION_KEY . '.step3', [
+            'formacao_academica' => $jovem->formacao_academica,
+            'experiencia_profissional' => $jovem->experiencia_profissional,
+            'habilidades' => $jovem->habilidades,
+            'link_portfolio' => $jovem->link_portfolio,
+            'link_linkedin' => $jovem->link_linkedin,
+        ]);
+
+        $jovem->fill($sessionData);
+
         return view('jovem.curriculo.step3', compact('jovem', 'user'));
     }
 
@@ -90,6 +139,10 @@ class JovemProfileController extends Controller
 
         $request->session()->put(self::SESSION_KEY . '.step3', $validated);
 
+        if ($request->has('action') && $request->input('action') === 'back') {
+            return redirect()->route('jovem.curriculo.step2');
+        }
+
         return redirect()->route('jovem.curriculo.step4');
     }
 
@@ -102,11 +155,15 @@ class JovemProfileController extends Controller
 
     public function processStep4(Request $request): RedirectResponse
     {
+        if ($request->has('action') && $request->input('action') === 'back') {
+            return redirect()->route('jovem.curriculo.step3');
+        }
+
         $request->validate(['curriculo_pdf' => ['nullable', 'file', 'mimes:pdf', 'max:2048']]);
 
         $user = Auth::user();
         
-        $path = $user->jovem->curriculo_path ?? null; // <<< CORREÇÃO AQUI
+        $path = $user->jovem->curriculo_path ?? null;
         if ($request->hasFile('curriculo_pdf')) {
             if ($path) {
                 Storage::disk('public')->delete($path);
@@ -122,7 +179,7 @@ class JovemProfileController extends Controller
             $step1Data,
             $step2Data,
             $step3Data,
-            ['curriculo_path' => $path] // <<< CORREÇÃO AQUI
+            ['curriculo_path' => $path]
         );
 
         unset($dataToSave['nome_completo']);

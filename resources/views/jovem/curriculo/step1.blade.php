@@ -37,7 +37,8 @@
                 </div>
                 <div class="col-md-6">
                     <label for="cpf" class="form-label">CPF (Somente números)</label>
-                    <input id="cpf" class="form-control" type="text" name="cpf" value="{{ old('cpf', $jovem->cpf) }}" required placeholder="Ex: 12345678900" />
+                    <input id="cpf" class="form-control @error('cpf') is-invalid @enderror" type="text" name="cpf" value="{{ old('cpf', $jovem->cpf) }}" placeholder="Ex: 12345678900" />
+                    <div id="cpf-error-msg" class="text-danger mt-1" style="display: none;">O CPF deve conter somente números.</div>
                     @error('cpf') <div class="text-danger mt-1">{{ $message }}</div> @enderror
                 </div>
                 <div class="col-md-6">
@@ -75,4 +76,35 @@
             </div>
         </form>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const cpfInput = document.getElementById('cpf');
+            const cpfErrorMsg = document.getElementById('cpf-error-msg');
+
+            if (cpfInput) {
+                cpfInput.addEventListener('blur', function () {
+                    const valor = cpfInput.value.trim();
+
+                    if (valor === '') {
+                        if (cpfErrorMsg) cpfErrorMsg.style.display = 'none';
+                        cpfInput.classList.remove('is-invalid');
+                        return;
+                    }
+
+                    if (!/^\d+$/.test(valor)) {
+                        if (cpfErrorMsg) cpfErrorMsg.style.display = 'block';
+                        cpfInput.classList.add('is-invalid');
+                        alert('O CPF deve conter somente números.');
+                        setTimeout(function () {
+                            cpfInput.focus();
+                        }, 50);
+                    } else {
+                        if (cpfErrorMsg) cpfErrorMsg.style.display = 'none';
+                        cpfInput.classList.remove('is-invalid');
+                    }
+                });
+            }
+        });
+    </script>
 </x-app-layout>

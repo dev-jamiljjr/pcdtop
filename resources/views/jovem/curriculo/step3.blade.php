@@ -13,7 +13,6 @@
             <h3 class="h4 mb-3">Qualificação Profissional</h3>
             <div class="row g-3">
                 <div class="col-12">
-                    {{-- Título alterado conforme sua solicitação --}}
                     <label for="formacao" class="form-label">Formação</label>
                     <textarea id="formacao" name="formacao_academica" class="form-control" rows="4">{{ old('formacao_academica', $jovem->formacao_academica) }}</textarea>
                 </div>
@@ -36,7 +35,7 @@
             </div>
 
             <div class="d-flex justify-content-between mt-4">
-                <a href="{{ route('jovem.curriculo.step2') }}" class="btn btn-secondary"><i class="bi bi-arrow-left me-2"></i>Voltar</a>
+                <button type="submit" name="action" value="back" class="btn btn-secondary"><i class="bi bi-arrow-left me-2"></i>Voltar</button>
                 <button type="submit" class="btn btn-primary" style="background-color: var(--pcdtop-dark-blue); border-color: var(--pcdtop-dark-blue);">
                     Próximo <i class="bi bi-arrow-right ms-2"></i>
                 </button>

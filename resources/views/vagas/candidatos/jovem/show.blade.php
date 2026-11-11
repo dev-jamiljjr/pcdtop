@@ -13,6 +13,7 @@
                 <div class="col-md-6 mb-3">
                     <h5 class="fw-bold">Informações Pessoais</h5>
                     <p><strong>Nome:</strong> {{ $jovem->user->name }}</p>
+                    <p><strong>CPF:</strong> {{ $jovem->cpf_formatado ?? 'Não informado' }}</p>
                     <p><strong>E-mail:</strong> {{ $jovem->user->email }}</p>
                     <p><strong>Telefone:</strong> {{ $jovem->telefone ?? 'Não informado' }}</p>
                     <p><strong>Data de Nasc.:</strong> {{ $jovem->data_nascimento ? \Carbon\Carbon::parse($jovem->data_nascimento)->format('d/m/Y') : 'Não informado' }}</p>
@@ -37,7 +38,6 @@
                     @endif
                     <p class="mt-3"><strong>Currículo PDF:</strong>
                         @if ($jovem->curriculo_path)
-                            {{-- <<< ALTERAÇÃO AQUI: Aponta para a nova rota de visualização de PDF >>> --}}
                             <a href="{{ route('vagas.candidatos.jovem.viewCurriculoPdf', ['vaga' => $vaga->id, 'jovem' => $jovem->id]) }}" target="_blank" class="btn btn-sm btn-info text-white">Visualizar Currículo</a>
                         @else
                             Não enviado

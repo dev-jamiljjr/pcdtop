@@ -31,6 +31,24 @@ class Jovem extends Model
         return $this->hasMany(Candidatura::class);
     }
 
+    /**
+     * Retorna o CPF formatado no padrão 000.000.000-00 exclusivamente para a camada de apresentação.
+     */
+    public function getCpfFormatadoAttribute(): ?string
+    {
+        if (empty($this->cpf)) {
+            return null;
+        }
+
+        $cpfNumeros = preg_replace('/\D/', '', (string) $this->cpf);
+
+        if (strlen($cpfNumeros) === 11) {
+            return vsprintf('%s%s%s.%s%s%s.%s%s%s-%s%s', str_split($cpfNumeros));
+        }
+
+        return (string) $this->cpf;
+    }
+
     protected static function boot()
     {
         parent::boot();

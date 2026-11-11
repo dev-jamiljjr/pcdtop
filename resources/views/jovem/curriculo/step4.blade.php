@@ -71,7 +71,7 @@
                 @endif
                 
                 <div class="d-flex justify-content-between mt-4">
-                    <a href="{{ route('jovem.curriculo.step3') }}" class="btn btn-secondary">Voltar</a>
+                    <button type="submit" name="action" value="back" class="btn btn-secondary">Voltar</button>
                     <button type="submit" class="btn btn-pcdtop-primary">Finalizar Cadastro</button>
                 </div>
             </form>
@@ -80,14 +80,12 @@
 </x-app-layout>
 
 <style>
-    /* Estilos para o indicador de etapa ativa */
     .bg-pcdtop-yellow {
         background-color: var(--pcdtop-yellow) !important;
     }
     .text-pcdtop-dark-blue {
         color: var(--pcdtop-dark-blue) !important;
     }
-    /* CORREÇÃO: Estilo para o botão principal azul com texto branco */
     .btn-pcdtop-primary {
         background-color: var(--pcdtop-blue);
         color: white;
@@ -95,7 +93,7 @@
         font-weight: bold;
     }
     .btn-pcdtop-primary:hover {
-        background-color: var(--pcdtop-dark-blue); /* Escurece no hover */
+        background-color: var(--pcdtop-dark-blue);
         border-color: var(--pcdtop-dark-blue);
         color: white;
     }

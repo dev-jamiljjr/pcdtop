@@ -12,7 +12,6 @@
             </div>
         @endif
 
-        {{-- <<< ALTERAÇÃO: CABEÇALHO COM STATUS E SWITCH >>> --}}
         <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
             <h1 class="h2 mb-0">Perfil do Jovem: {{ $jovem->user->name }}</h1>
             <div class="d-flex align-items-center gap-3">
@@ -42,6 +41,7 @@
                 <div class="col-md-6 mb-3">
                     <h5 class="fw-bold">Informações Pessoais</h5>
                     <p><strong>Nome:</strong> {{ $jovem->user->name }}</p>
+                    <p><strong>CPF:</strong> {{ $jovem->cpf_formatado ?? 'Não informado' }}</p>
                     <p><strong>E-mail:</strong> {{ $jovem->user->email }}</p>
                     <p><strong>Telefone:</strong> {{ $jovem->telefone ?? 'Não informado' }}</p>
                     <p><strong>Data de Nasc.:</strong> {{ $jovem->data_nascimento ? \Carbon\Carbon::parse($jovem->data_nascimento)->format('d/m/Y') : 'Não informado' }}</p>
