@@ -26,4 +26,22 @@ class EmpresaContato extends Model
     {
         return $this->belongsTo(Empresa::class);
     }
+
+    /**
+     * Retorna o CPF formatado no padrão 000.000.000-00 exclusivamente para visualização.
+     */
+    public function getCpfFormatadoAttribute(): ?string
+    {
+        if (empty($this->cpf)) {
+            return null;
+        }
+
+        $numeros = preg_replace('/\D/', '', (string) $this->cpf);
+
+        if (strlen($numeros) === 11) {
+            return vsprintf('%s%s%s.%s%s%s.%s%s%s-%s%s', str_split($numeros));
+        }
+
+        return (string) $this->cpf;
+    }
 }

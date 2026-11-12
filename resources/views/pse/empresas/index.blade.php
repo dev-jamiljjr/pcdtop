@@ -32,7 +32,8 @@
                         </div>
                         <p class="mb-1"><strong>E-mail:</strong> {{ $empresaUser->email }}</p>
                         @if ($empresaUser->empresa)
-                            <p class="mb-1"><strong>CNPJ:</strong> {{ $empresaUser->empresa->cnpj ?? 'N/A' }}</p>
+                            {{-- CORREÇÃO AQUI: Utiliza o accessor cnpj_formatado para exibir a máscara --}}
+                            <p class="mb-1"><strong>CNPJ:</strong> {{ $empresaUser->empresa->cnpj_formatado ?? $empresaUser->empresa->cnpj ?? 'N/A' }}</p>
                             <p class="mb-1"><strong>Cidade/Estado:</strong> {{ $empresaUser->empresa->cidade ?? 'N/A' }}/{{ $empresaUser->empresa->estado ?? 'N/A' }}</p>
                             <div class="mt-3 d-flex gap-2">
                                 <a href="{{ route('pse.empresas.show', $empresaUser->empresa->id) }}" class="btn btn-sm btn-outline-primary">

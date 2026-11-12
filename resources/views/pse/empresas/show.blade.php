@@ -4,7 +4,6 @@
             <i class="bi bi-arrow-left me-2"></i>Voltar para a Lista
         </a>
 
-        {{-- Alerta de sucesso para feedback da ação --}}
         @if(session('status'))
             <div class="alert alert-success alert-dismissible fade show" role="alert">
                 {{ session('status') }}
@@ -12,7 +11,6 @@
             </div>
         @endif
 
-        {{-- <<< ALTERAÇÃO: CABEÇALHO COM STATUS E SWITCH >>> --}}
         <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
             <h1 class="h2 mb-0">Detalhes da Empresa: {{ $empresa->nome_fantasia ?? $empresa->user->name }}</h1>
             <div class="d-flex align-items-center gap-3">
@@ -43,7 +41,7 @@
                     <h5 class="h6 text-muted">Informações Gerais</h5>
                     <p><strong>Razão Social:</strong> {{ $empresa->razao_social ?? 'Não informado' }}</p>
                     <p><strong>Nome Fantasia:</strong> {{ $empresa->nome_fantasia ?? 'Não informado' }}</p>
-                    <p><strong>CNPJ:</strong> {{ $empresa->cnpj ?? 'Não informado' }}</p>
+                    <p><strong>CNPJ:</strong> {{ $empresa->cnpj_formatado ?? $empresa->cnpj ?? 'Não informado' }}</p>
                     <p><strong>Website:</strong> 
                         @if($empresa->website)
                             <a href="{{ $empresa->website }}" target="_blank">{{ $empresa->website }}</a>
@@ -66,7 +64,7 @@
                     <p><strong>Endereço:</strong> {{ $empresa->endereco ?? 'Não informado' }}</p>
                     <p><strong>Bairro:</strong> {{ $empresa->bairro ?? 'Não informado' }}</p>
                     <p><strong>Cidade/Estado:</strong> {{ ($empresa->cidade && $empresa->estado) ? $empresa->cidade . '/' . $empresa->estado : 'Não informado' }}</p>
-                    <p><strong>CEP:</strong> {{ $empresa->cep ?? 'Não informado' }}</p>
+                    <p><strong>CEP:</strong> {{ $empresa->cep_formatado ?? $empresa->cep ?? 'Não informado' }}</p>
                 </div>
             </div>
             
@@ -89,7 +87,7 @@
                                 <tr>
                                     <td>{{ $contato->nome }}</td>
                                     <td>{{ $contato->cargo ?? 'N/A' }}</td>
-                                    <td>{{ $contato->cpf ?? 'N/A' }}</td>
+                                    <td>{{ $contato->cpf_formatado ?? $contato->cpf ?? 'N/A' }}</td>
                                     <td>{{ $contato->telefone ?? 'N/A' }}</td>
                                     <td>{{ $contato->email ?? 'N/A' }}</td>
                                 </tr>

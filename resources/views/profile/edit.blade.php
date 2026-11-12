@@ -1,6 +1,5 @@
 <x-app-layout>
     <div class="container py-4">
-        {{-- <<< ALTERAÇÃO AQUI: Texto para Acesso restrito >>> --}}
         @if(Auth::user()->isBlocked() && Auth::user()->tipo_perfil !== 'pse')
             <div class="alert alert-warning text-center" role="alert">
                 <h4 class="alert-heading">Acesso restrito!</h4>
@@ -15,7 +14,6 @@
             @csrf
             @method('PUT')
 
-            {{-- Exibe mensagens de erro de validação --}}
             @if ($errors->any())
                 <div class="alert alert-danger mb-4">
                     <h5 class="alert-heading">Opa! Algo deu errado.</h5>
@@ -27,7 +25,7 @@
                 </div>
             @endif
 
-            {{-- Seção de Dados de Acesso (Comum a todos) --}}
+            {{-- Seção de Dados de Acesso --}}
             <h3 class="h4 mb-3">Dados de Acesso</h3>
             <div class="card shadow-sm p-4 mb-4">
                 <div class="row">
@@ -37,21 +35,18 @@
                     </div>
                     <div class="col-md-6 mb-3">
                         <label for="email" class="form-label">{{ __('Email') }}</label>
-                        <input id="email" class="form-control" type="email" name="email" value="{{ old('email', $user->email) }}" required />
+                        <input id="email" class="form-control" type="email" name="email" value="{{ old('email', $user->email) }}" required @if($user->tipo_perfil === 'empresa') readonly tabindex="-1" style="background-color: #e9ecef;" @endif />
                     </div>
                 </div>
             </div>
 
             <h3 class="h4 mb-3 mt-4">Informações Específicas do Perfil</h3>
 
-            {{-- Formulário para JOVEM --}}
             @if ($user->tipo_perfil === 'jovem' && $user->jovem)
-                {{-- O formulário do jovem permanece o mesmo --}}
                 <div class="card shadow-sm p-4 mb-4">
-                    {{-- Seu código do formulário do jovem aqui --}}
+                    {{-- Código do formulário do jovem preservado --}}
                 </div>
 
-            {{-- Formulário para EMPRESA --}}
             @elseif ($user->tipo_perfil === 'empresa' && $user->empresa)
                 {{-- Dados da Empresa --}}
                 <div class="card shadow-sm p-4 mb-4">
@@ -67,7 +62,7 @@
                         </div>
                         <div class="col-md-4 mb-3">
                             <label for="cnpj" class="form-label">CNPJ</label>
-                            <input id="cnpj" class="form-control" type="text" name="cnpj" value="{{ old('cnpj', $user->empresa->cnpj) }}" required />
+                            <input id="cnpj" class="form-control" type="text" name="cnpj" value="{{ old('cnpj', $user->empresa->cnpj_formatado ?? $user->empresa->cnpj) }}" readonly tabindex="-1" style="background-color: #e9ecef;" />
                         </div>
                         <div class="col-md-4 mb-3">
                             <label for="telefone" class="form-label">Telefone da Empresa</label>
@@ -75,7 +70,7 @@
                         </div>
                         <div class="col-md-4 mb-3">
                             <label for="email_contato" class="form-label">E-mail Principal de Contato</label>
-                            <input id="email_contato" class="form-control" type="email" name="email_contato" value="{{ old('email_contato', $user->empresa->email_contato) }}" required />
+                            <input id="email_contato" class="form-control" type="email" name="email_contato" value="{{ old('email_contato', $user->empresa->email_contato) }}" readonly tabindex="-1" style="background-color: #e9ecef;" />
                         </div>
                         <div class="col-md-12 mb-3">
                             <label for="website" class="form-label">Website (opcional)</label>
@@ -104,7 +99,7 @@
                         </div>
                          <div class="col-md-4 mb-3">
                             <label for="cep" class="form-label">CEP</label>
-                            <input id="cep" class="form-control" type="text" name="cep" value="{{ old('cep', $user->empresa->cep) }}" />
+                            <input id="cep" class="form-control" type="text" name="cep" value="{{ old('cep', $user->empresa->cep) }}" placeholder="Somente números" />
                         </div>
                     </div>
                 </div>
@@ -132,7 +127,7 @@
                                 <input id="contato_1_cargo" class="form-control" type="text" name="contatos[0][cargo]" value="{{ old('contatos.0.cargo', $primeiro_contato->cargo ?? '') }}" />
                             </div>
                             <div class="col-md-4 mb-3">
-                                <label for="contato_1_cpf" class="form-label">CPF</label>
+                                <label for="contato_1_cpf" class="form-label">CPF (Somente números)</label>
                                 <input id="contato_1_cpf" class="form-control" type="text" name="contatos[0][cpf]" value="{{ old('contatos.0.cpf', $primeiro_contato->cpf ?? '') }}" />
                             </div>
                             <div class="col-md-4 mb-3">
@@ -141,7 +136,8 @@
                             </div>
                             <div class="col-md-4 mb-3">
                                 <label for="contato_1_email" class="form-label">E-mail</label>
-                                <input id="contato_1_email" class="form-control" type="email" name="contatos[1][email]" value="{{ old('contatos.0.email', $primeiro_contato->email ?? '') }}" />
+                                {{-- CORREÇÃO AQUI: Índice ajustado de 1 para 0 --}}
+                                <input id="contato_1_email" class="form-control" type="email" name="contatos[0][email]" value="{{ old('contatos.0.email', $primeiro_contato->email ?? '') }}" />
                             </div>
                         </div>
                     </div>
@@ -160,7 +156,7 @@
                                 <input id="contato_2_cargo" class="form-control" type="text" name="contatos[1][cargo]" value="{{ old('contatos.1.cargo', $segundo_contato->cargo ?? '') }}" />
                             </div>
                             <div class="col-md-4 mb-3">
-                                <label for="contato_2_cpf" class="form-label">CPF</label>
+                                <label for="contato_2_cpf" class="form-label">CPF (Somente números)</label>
                                 <input id="contato_2_cpf" class="form-control" type="text" name="contatos[1][cpf]" value="{{ old('contatos.1.cpf', $segundo_contato->cpf ?? '') }}" />
                             </div>
                             <div class="col-md-4 mb-3">
@@ -186,4 +182,36 @@
             </div>
         </form>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            function aplicarValidacaoNumerica(inputId, mensagemErro) {
+                const el = document.getElementById(inputId);
+                if (!el) return;
+
+                el.addEventListener('blur', function () {
+                    const valor = el.value.trim();
+
+                    if (valor === '') {
+                        el.classList.remove('is-invalid');
+                        return;
+                    }
+
+                    if (!/^\d+$/.test(valor)) {
+                        el.classList.add('is-invalid');
+                        alert(mensagemErro);
+                        setTimeout(function () {
+                            el.focus();
+                        }, 50);
+                    } else {
+                        el.classList.remove('is-invalid');
+                    }
+                });
+            }
+
+            aplicarValidacaoNumerica('cep', 'O CEP deve conter somente números.');
+            aplicarValidacaoNumerica('contato_1_cpf', 'O CPF deve conter somente números.');
+            aplicarValidacaoNumerica('contato_2_cpf', 'O CPF deve conter somente números.');
+        });
+    </script>
 </x-app-layout>
